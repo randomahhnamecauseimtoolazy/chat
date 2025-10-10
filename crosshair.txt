@@ -2,9 +2,10 @@ local Crosshair = {}
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 
-function Crosshair:Init(Settings, State)
+function Crosshair:Init(Settings, State, Utilities)
     self.Settings = Settings
     self.State = State
+    self.Utilities = Utilities
     self:initializeCrosshair()
 end
 

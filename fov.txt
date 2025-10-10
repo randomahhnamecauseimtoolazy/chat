@@ -2,9 +2,10 @@ local FOV = {}
 local Camera = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
 
-function FOV:Init(Settings, State)
+function FOV:Init(Settings, State, Utilities)
     self.Settings = Settings
     self.State = State
+    self.Utilities = Utilities
     self.Settings.FOV.Circle.Visible = false
     self.Settings.FOV.Circle.Filled = self.Settings.FOV.Filled
     self.Settings.FOV.Circle.Color = self.Settings.FOV.FillColor

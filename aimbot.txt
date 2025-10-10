@@ -4,9 +4,10 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local Camera = workspace.CurrentCamera
 
-function Aimbot:Init(Settings, State)
+function Aimbot:Init(Settings, State, Utilities)
     self.Settings = Settings
     self.State = State
+    self.Utilities = Utilities
     self.Settings.Aimbot.Easing.Sensitivity.Value = self.Settings.Aimbot.Easing.Strength
 end
 

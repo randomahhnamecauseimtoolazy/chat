@@ -1,9 +1,10 @@
 local Chams = {}
 local RunService = game:GetService("RunService")
 
-function Chams:Init(Settings, State)
+function Chams:Init(Settings, State, Utilities)
     self.Settings = Settings
     self.State = State
+    self.Utilities = Utilities
 end
 
 function Chams:applyHighlight(p)

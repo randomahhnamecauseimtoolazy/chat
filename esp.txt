@@ -2,9 +2,10 @@ local ESP = {}
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 
-function ESP:Init(Settings, State)
+function ESP:Init(Settings, State, Utilities)
     self.Settings = Settings
     self.State = State
+    self.Utilities = Utilities
 end
 
 function ESP:initializeESP()

@@ -2,9 +2,10 @@ local Misc = {}
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 
-function Misc:Init(Settings, State)
+function Misc:Init(Settings, State, Utilities)
     self.Settings = Settings
     self.State = State
+    self.Utilities = Utilities
 end
 
 function Misc:storeOriginalProperties(inst)

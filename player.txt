@@ -1,9 +1,10 @@
 local PlayerMod = {}
 local UserInputService = game:GetService("UserInputService")
 
-function PlayerMod:Init(Settings, State)
+function PlayerMod:Init(Settings, State, Utilities)
     self.Settings = Settings
     self.State = State
+    self.Utilities = Utilities
     self.lastJumpTime = 0
     self.jumpCooldown = 0.8125
     UserInputService.InputBegan:Connect(function(i, gp)
