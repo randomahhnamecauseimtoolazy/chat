@@ -1,10 +1,18 @@
 local UI = {}
 
-function UI:Init(Settings, State, Library, hasMouseMoveRel)
+function UI:Init(Settings, State, Library, hasMouseMoveRel, Aimbot, ESP, FOV, Chams, Crosshair, PlayerMod, Misc, Utilities)
     self.Settings = Settings
     self.State = State
     self.Library = Library
     self.hasMouseMoveRel = hasMouseMoveRel
+    self.Aimbot = Aimbot
+    self.ESP = ESP
+    self.FOV = FOV
+    self.Chams = Chams
+    self.Crosshair = Crosshair
+    self.PlayerMod = PlayerMod
+    self.Misc = Misc
+    self.Utilities = Utilities
     self:setupUI()
 end
 
@@ -169,7 +177,12 @@ function UI:setupUI()
             Max = 1.5,
             Decimals = 1,
             Rounding = 1,
-            Callback = function(v) self.Settings.Aimbot.Easing.Strength = v self.Aimbot:updateSensitivity(v) end
+            Callback = function(v)
+                self.Settings.Aimbot.Easing.Strength = v
+                if self.Aimbot then
+                    self.Aimbot:updateSensitivity(v)
+                end
+            end
         })
     end
 
