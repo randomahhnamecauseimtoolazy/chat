@@ -103,36 +103,51 @@ function ESP:renderESP()
                             e.Visible = false
                         end
                     else
-                        -- Dynamic scaling for smoother visuals
-                        local scale = math.clamp(1200 / distCam * 80 / Camera.FieldOfView, 0.5, 3)
-                        local boxW, boxH = math.floor(3.5 * scale), math.floor(5 * scale)
-                        local boxPos = Vector2.new(torsoPos.X - boxW / 2, torsoPos.Y - boxH / 2)
+                        local scale = 1000 / distCam * 80 / Camera.FieldOfView
+                        local boxW, boxH = math.floor(2.5 * scale), math.floor(5.5 * scale) -- Adjusted for tighter, more professional fit
+                        local boxPos = Vector2.new(torsoPos.X - boxW / 2, torsoPos.Y - boxH / 2 + (0.5 * scale)) -- Slight offset for better centering
                         local vis = self.Utilities:isVisible(head, self.Settings.ESP.VisibilityCheck)
-                        local boxCol = vis and self.Settings.ESP.Features.Box.Color or Color3.fromRGB(255, 80, 80)
-                        local alpha = math.clamp(1 - (distCam / self.Settings.ESP.MaxDistance.Value), 0.3, 1)
+                        local boxCol = vis and self.Settings.ESP.Features.Box.Color or Color3.fromRGB(255, 0, 0)
 
                         if self.Settings.ESP.Features.Box.Enabled then
+                            -- Add subtle fill for depth and professionalism
+                            if not cache.BoxFill then
+                                cache.BoxFill = Drawing.new("Square")
+                                cache.BoxFill.Filled = true
+                                cache.BoxFill.Transparency = 0.15 -- Low opacity for subtle highlight
+                                table.insert(cache, cache.BoxFill)
+                            end
+                            cache.BoxFill.Visible = true
+                            cache.BoxFill.Color = boxCol
+                            cache.BoxFill.Position = boxPos
+                            cache.BoxFill.Size = Vector2.new(boxW, boxH)
+
                             cache.BoxSquare.Visible = true
                             cache.BoxSquare.Color = boxCol
-                            cache.BoxSquare.Transparency = 1 - alpha
                             cache.BoxSquare.Position = boxPos
                             cache.BoxSquare.Size = Vector2.new(boxW, boxH)
-                            cache.BoxOutline.Position = Vector2.new(boxPos.X - 2, boxPos.Y - 2)
-                            cache.BoxOutline.Size = Vector2.new(boxW + 4, boxH + 4)
-                            cache.BoxOutline.Color = Color3.fromRGB(0, 0, 0)
-                            cache.BoxOutline.Transparency = 0.7
+                            cache.BoxSquare.Filled = false
+                            cache.BoxSquare.Thickness = 1 -- Clean thin lines
+
+                            cache.BoxOutline.Visible = true
+                            cache.BoxOutline.Color = Color3.new(0, 0, 0) -- Black outline for contrast
+                            cache.BoxOutline.Transparency = 1
+                            cache.BoxOutline.Filled = false
+                            cache.BoxOutline.Thickness = 1
+                            cache.BoxOutline.Position = Vector2.new(boxPos.X - 1, boxPos.Y - 1)
+                            cache.BoxOutline.Size = Vector2.new(boxW + 2, boxH + 2)
                         else
                             cache.BoxSquare.Visible = false
                             cache.BoxOutline.Visible = false
+                            if cache.BoxFill then cache.BoxFill.Visible = false end
                         end
 
                         if self.Settings.ESP.Features.Tracer.Enabled then
                             cache.TracerLine.Visible = true
-                            cache.TracerLine.Color = vis and self.Settings.ESP.Features.Tracer.Color or Color3.fromRGB(255, 80, 80)
-                            cache.TracerLine.Transparency = 1 - alpha
-                            cache.TracerLine.From = Vector2.new(viewSize.X / 2, viewSize.Y - 50) -- Slightly offset for cleaner look
-                            cache.TracerLine.To = screenPos
-                            cache.TracerLine.Thickness = math.max(1, scale * 0.5)
+                            cache.TracerLine.Color = vis and self.Settings.ESP.Features.Tracer.Color or Color3.fromRGB(255, 0, 0)
+                            cache.TracerLine.Thickness = 1 -- Clean thickness
+                            cache.TracerLine.From = Vector2.new(viewSize.X / 2, viewSize.Y)
+                            cache.TracerLine.To = boxPos + Vector2.new(boxW / 2, boxH) -- To bottom of box for better flow
                         else
                             cache.TracerLine.Visible = false
                         end
@@ -141,13 +156,11 @@ function ESP:renderESP()
                             cache.NameLabel.Visible = true
                             cache.NameLabel.Text = cachedProperties[p].Name
                             cache.NameLabel.Color = self.Settings.ESP.Features.Name.Color
-                            cache.NameLabel.Size = math.max(12, math.min(18, scale * 3))
+                            cache.NameLabel.Size = math.max(12, math.min(16, scale * 2.5))
                             cache.NameLabel.Center = true
-                            cache.NameLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y - 20)
+                            cache.NameLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y - cache.NameLabel.Size - 2) -- Slightly higher for spacing
                             cache.NameLabel.Outline = true
-                            cache.NameLabel.OutlineColor = Color3.fromRGB(0, 0, 0)
-                            cache.NameLabel.Font = Enum.Font.SourceSansBold
-                            cache.NameLabel.Transparency = 1 - alpha
+                            cache.NameLabel.Transparency = 1
                         else
                             cache.NameLabel.Visible = false
                         end
@@ -156,23 +169,71 @@ function ESP:renderESP()
                             cache.DistanceLabel.Visible = true
                             cache.DistanceLabel.Text = math.floor(distCam) .. " studs"
                             cache.DistanceLabel.Color = self.Settings.ESP.Features.DistanceText.Color
-                            cache.DistanceLabel.Size = math.max(12, math.min(16, scale * 2.8))
-                            cache.DistanceLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y + boxH + 10)
+                            cache.DistanceLabel.Size = math.max(14, math.min(18, scale * 2.5))
+                            cache.DistanceLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y + boxH + 2) -- Better spacing
+                            cache.DistanceLabel.Center = true
                             cache.DistanceLabel.Outline = true
-                            cache.DistanceLabel.OutlineColor = Color3.fromRGB(0, 0, 0)
-                            cache.DistanceLabel.Font = Enum.Font.SourceSans
-                            cache.DistanceLabel.Transparency = 1 - alpha
+                            cache.DistanceLabel.Transparency = 1
                         else
                             cache.DistanceLabel.Visible = false
+                        end
+
+                        -- Added health bar for more informative and professional look
+                        if self.Settings.ESP.Features.HealthBar and self.Settings.ESP.Features.HealthBar.Enabled then -- Assuming added to settings
+                            local humanoid = p.Character:FindFirstChild("Humanoid")
+                            if humanoid then
+                                local healthPct = humanoid.Health / humanoid.MaxHealth
+                                local barWidth = 4 -- Thin bar for clean look
+                                local barHeight = boxH
+                                local barPos = Vector2.new(boxPos.X - barWidth - 4, boxPos.Y) -- Left of box with spacing
+
+                                if not cache.HealthBarBG then
+                                    cache.HealthBarBG = Drawing.new("Square")
+                                    cache.HealthBarBG.Filled = true
+                                    cache.HealthBarBG.Transparency = 0.5
+                                    cache.HealthBarBG.Color = Color3.new(0, 0, 0) -- Dark background
+                                    table.insert(cache, cache.HealthBarBG)
+                                end
+
+                                if not cache.HealthBarFill then
+                                    cache.HealthBarFill = Drawing.new("Square")
+                                    cache.HealthBarFill.Filled = true
+                                    cache.HealthBarFill.Transparency = 1
+                                    table.insert(cache, cache.HealthBarFill)
+                                end
+
+                                cache.HealthBarBG.Visible = true
+                                cache.HealthBarBG.Position = barPos
+                                cache.HealthBarBG.Size = Vector2.new(barWidth, barHeight)
+
+                                cache.HealthBarFill.Visible = true
+                                cache.HealthBarFill.Position = barPos + Vector2.new(0, barHeight * (1 - healthPct))
+                                cache.HealthBarFill.Size = Vector2.new(barWidth, barHeight * healthPct)
+
+                                -- Dynamic color for health (red low, yellow mid, green high)
+                                if healthPct < 0.3 then
+                                    cache.HealthBarFill.Color = Color3.fromRGB(255, 0, 0)
+                                elseif healthPct < 0.6 then
+                                    cache.HealthBarFill.Color = Color3.fromRGB(255, 255, 0)
+                                else
+                                    cache.HealthBarFill.Color = Color3.fromRGB(0, 255, 0)
+                                end
+                            else
+                                if cache.HealthBarBG then cache.HealthBarBG.Visible = false end
+                                if cache.HealthBarFill then cache.HealthBarFill.Visible = false end
+                            end
+                        else
+                            if cache.HealthBarBG then cache.HealthBarBG.Visible = false end
+                            if cache.HealthBarFill then cache.HealthBarFill.Visible = false end
                         end
 
                         if self.Settings.ESP.Features.HeadDot.Enabled and headOn then
                             cache.HeadDot.Visible = true
                             cache.HeadDot.Color = self.Settings.ESP.Features.HeadDot.Color
-                            cache.HeadDot.Radius = math.max(3, boxH / 15)
-                            cache.HeadDot.Position = Vector2.new(headPos.X, headPos.Y)
-                            cache.HeadDot.Transparency = 0.5
+                            cache.HeadDot.Radius = boxH / 15 -- Slightly larger for visibility
                             cache.HeadDot.NumSides = 32 -- Smoother circle
+                            cache.HeadDot.Thickness = 1
+                            cache.HeadDot.Position = Vector2.new(headPos.X, headPos.Y)
                         else
                             cache.HeadDot.Visible = false
                         end
