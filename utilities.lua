@@ -42,17 +42,24 @@ function Utilities:isEnemy(player)
 end
 
 function Utilities:cacheObject(object)
-    if not self.State.Storage.ESPCache[object] then
-        self.State.Storage.ESPCache[object] = {
-            BoxSquare = drawing.new("Square"),
-            BoxOutline = drawing.new("Square"),
-            TracerLine = drawing.new("Line"),
-            DistanceLabel = drawing.new("Text"),
-            NameLabel = drawing.new("Text"),
-            HeadDot = drawing.new("Circle")
-        }
-        for _, e in pairs(self.State.Storage.ESPCache[object]) do e.Visible = false end
+    local cache = self.State.Storage.ESPCache
+    if cache[object] then return end 
+
+    local drawings = {
+        BoxSquare = Drawing.new("Square"),
+        BoxOutline = Drawing.new("Square"),
+        TracerLine = Drawing.new("Line"),
+        DistanceLabel = Drawing.new("Text"),
+        NameLabel = Drawing.new("Text"),
+        HeadDot = Drawing.new("Circle")
+    }
+
+    for _, d in pairs(drawings) do
+        d.Visible = false
+        d.ZIndex = 1
     end
+
+    cache[object] = drawings
 end
 
 function Utilities:uncacheObject(object)
