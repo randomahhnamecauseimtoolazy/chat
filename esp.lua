@@ -74,6 +74,7 @@ function ESP:renderESP()
     local cacheTable = self.State.Storage.ESPCache
     local playersToDraw = self.State.PlayersToDraw
     local cachedProperties = self.State.CachedProperties
+    local settings = self.Settings.ESP
 
     for i = 1, #playersToDraw do
         local p = playersToDraw[i]
@@ -104,59 +105,76 @@ function ESP:renderESP()
                         end
                     else
                         local scale = 1000 / distCam * 80 / Camera.FieldOfView
-                        local boxW, boxH = math.floor(3 * scale), math.floor(4 * scale)
+                        local boxW, boxH = math.floor(3.5 * scale), math.floor(5 * scale)
                         local boxPos = Vector2.new(torsoPos.X - boxW / 2, torsoPos.Y - boxH / 2)
-                        local vis = self.Utilities:isVisible(head, self.Settings.ESP.VisibilityCheck)
-                        local boxCol = vis and self.Settings.ESP.Features.Box.Color or Color3.fromRGB(255, 0, 0)
+                        local vis = self.Utilities:isVisible(head, settings.VisibilityCheck)
+                        local baseColor = vis and settings.ESP.Features.Box.Color or Color3.fromRGB(255, 0, 0)
+                        local gradientColor = settings.ESP.Features.Box.Gradient and Color3.fromRGB(baseColor.R * 255 * 0.7, baseColor.G * 255 * 0.7, baseColor.B * 255 * 0.7) or baseColor
 
-                        if self.Settings.ESP.Features.Box.Enabled then
+                        if settings.ESP.Features.Box.Enabled then
                             cache.BoxSquare.Visible = true
-                            cache.BoxSquare.Color = boxCol
+                            cache.BoxSquare.Color = baseColor
                             cache.BoxSquare.Position = boxPos
                             cache.BoxSquare.Size = Vector2.new(boxW, boxH)
-                            cache.BoxOutline.Position = Vector2.new(boxPos.X - 1, boxPos.Y - 1)
-                            cache.BoxOutline.Size = Vector2.new(boxW + 2, boxH + 2)
+                            cache.BoxOutline.Position = Vector2.new(boxPos.X - 2, boxPos.Y - 2)
+                            cache.BoxOutline.Size = Vector2.new(boxW + 4, boxH + 4)
+                            cache.BoxOutline.Color = gradientColor
+                            cache.BoxOutline.Thickness = 2
                         else
                             cache.BoxSquare.Visible = false
+                            cache.BoxOutline.Visible = false
                         end
 
-                        if self.Settings.ESP.Features.Tracer.Enabled then
+                        if settings.ESP.Features.Tracer.Enabled then
                             cache.TracerLine.Visible = true
-                            cache.TracerLine.Color = vis and self.Settings.ESP.Features.Tracer.Color or Color3.fromRGB(255, 0, 0)
-                            cache.TracerLine.From = Vector2.new(viewSize.X / 2, viewSize.Y)
+                            cache.TracerLine.Color = vis and settings.ESP.Features.Tracer.Color or Color3.fromRGB(255, 0, 0)
+                            cache.TracerLine.From = Vector2.new(viewSize.X / 2, viewSize.Y * 0.9)
                             cache.TracerLine.To = screenPos
+                            cache.TracerLine.Thickness = math.max(1, scale / 20)
+                            cache.TracerLine.Transparency = NumberSequence.new({
+                                NumberSequenceKeypoint.new(0, 0.3),
+                                NumberSequenceKeypoint.new(1, 1)
+                            })
                         else
                             cache.TracerLine.Visible = false
                         end
 
-                        if self.Settings.ESP.Features.Name.Enabled and cachedProperties[p] then
+                        if settings.ESP.Features.Name.Enabled and cachedProperties[p] then
                             cache.NameLabel.Visible = true
                             cache.NameLabel.Text = cachedProperties[p].Name
-                            cache.NameLabel.Color = self.Settings.ESP.Features.Name.Color
-                            cache.NameLabel.Size = math.max(12, math.min(16, scale * 2.5))
+                            cache.NameLabel.Color = settings.ESP.Features.Name.Color
+                            cache.NameLabel.Size = math.max(14, math.min(18, scale * 2.8))
                             cache.NameLabel.Center = true
-                            cache.NameLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y - 15)
+                            cache.NameLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y - 20)
                             cache.NameLabel.Outline = true
+                            cache.NameLabel.OutlineColor = Color3.fromRGB(0, 0, 0)
+                            cache.NameLabel.TextTransparency = 0.1
+                            cache.NameLabel.TextStrokeTransparency = 0.5
                         else
                             cache.NameLabel.Visible = false
                         end
 
-                        if self.Settings.ESP.Features.DistanceText.Enabled then
+                        if settings.ESP.Features.DistanceText.Enabled then
                             cache.DistanceLabel.Visible = true
                             cache.DistanceLabel.Text = math.floor(distCam) .. " studs"
-                            cache.DistanceLabel.Color = self.Settings.ESP.Features.DistanceText.Color
-                            cache.DistanceLabel.Size = math.max(14, math.min(18, scale * 2.5))
-                            cache.DistanceLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y + boxH + 5)
+                            cache.DistanceLabel.Color = settings.ESP.Features.DistanceText.Color
+                            cache.DistanceLabel.Size = math.max(12, math.min(16, scale * 2.3))
+                            cache.DistanceLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y + boxH + 10)
                             cache.DistanceLabel.Outline = true
+                            cache.DistanceLabel.OutlineColor = Color3.fromRGB(0, 0, 0)
+                            cache.DistanceLabel.TextTransparency = 0.1
+                            cache.DistanceLabel.TextStrokeTransparency = 0.5
                         else
                             cache.DistanceLabel.Visible = false
                         end
 
-                        if self.Settings.ESP.Features.HeadDot.Enabled and headOn then
+                        if settings.ESP.Features.HeadDot.Enabled and headOn then
                             cache.HeadDot.Visible = true
-                            cache.HeadDot.Color = self.Settings.ESP.Features.HeadDot.Color
-                            cache.HeadDot.Radius = boxH / 20
+                            cache.HeadDot.Color = settings.ESP.Features.HeadDot.Color
+                            cache.HeadDot.Radius = math.max(4, boxH / 15)
                             cache.HeadDot.Position = Vector2.new(headPos.X, headPos.Y)
+                            cache.HeadDot.NumSides = 32
+                            cache.HeadDot.Transparency = 0.2
                         else
                             cache.HeadDot.Visible = false
                         end
