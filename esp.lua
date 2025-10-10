@@ -4,7 +4,6 @@ local Camera = workspace.CurrentCamera
 
 local UPDATE_INTERVAL = 0.25
 local VISIBILITY_INTERVAL = 0.5
-local MAX_PLAYERS = 100
 
 function ESP:Init(Settings, State, Utilities)
 	self.Settings = Settings
@@ -14,28 +13,22 @@ end
 
 function ESP:initializeESP()
 	local cache = self.State.Storage.ESPCache
-	for i = 1, #cache do
-		self.Utilities:uncacheObject(cache[i])
+	for obj, drawings in pairs(cache) do
+		self.Utilities:uncacheObject(obj)
 	end
-	self.State.PlayersToDraw = table.create(MAX_PLAYERS)
+	self.State.PlayersToDraw = {}
 	self.State.CachedProperties = {}
 	self.State.LastUpdate = 0
 	self.State.LastVisUpdate = 0
-
-	for i = 1, MAX_PLAYERS do
-		cache[i] = self.Utilities:createESPObject and self.Utilities:createESPObject() or {}
-	end
 end
 
 function ESP:cleanupStalePlayers()
 	local cache = self.State.Storage.ESPCache
 	local cachedProps = self.State.CachedProperties
-	for i = #cache, 1, -1 do
-		local p = cache[i]
-		if p and not self.Utilities:isValidPlayer(p) then
-			self.Utilities:uncacheObject(p)
-			cachedProps[p] = nil
-			cache[i] = nil
+	for obj in pairs(cache) do
+		if not self.Utilities:isValidPlayer(obj) then
+			self.Utilities:uncacheObject(obj)
+			cachedProps[obj] = nil
 		end
 	end
 end
@@ -49,11 +42,12 @@ function ESP:updatePlayerCache()
 	local maxDistEnabled = settings.MaxDistance.Enabled
 	local maxDistValue = settings.MaxDistance.Value
 	local cameraPos = Camera.CFrame.Position
+
+	local players = self.Utilities:getPlayers()
 	local idx = 0
 
-	local allPlayers = self.Utilities:getPlayers()
-	for i = 1, #allPlayers do
-		local p = allPlayers[i]
+	for i = 1, #players do
+		local p = players[i]
 		if self.Utilities:isValidPlayer(p) and self.Utilities:isEnemy(p) then
 			local torso, head = self.Utilities:getBodyPart(p, "Torso"), self.Utilities:getBodyPart(p, "Head")
 			if torso and head then
@@ -61,6 +55,8 @@ function ESP:updatePlayerCache()
 				if (not maxDistEnabled) or dist <= maxDistValue then
 					idx += 1
 					playersToDraw[idx] = p
+
+					-- cache display name if found
 					local gui = head:FindFirstChildOfClass("BillboardGui")
 					local label = gui and gui:FindFirstChildOfClass("TextLabel")
 					if gui and label then
@@ -107,21 +103,20 @@ function ESP:renderESP()
 		local p = playersToDraw[i]
 		if not self.Utilities:isValidPlayer(p) then continue end
 
-		local cache = cacheTable[p] or (self.Utilities:cacheObject(p) and cacheTable[p])
+		self.Utilities:cacheObject(p)
+		local cache = cacheTable[p]
+		if not cache then continue end
+
 		local torso, head = self.Utilities:getBodyPart(p, "Torso"), self.Utilities:getBodyPart(p, "Head")
 		if not torso or not head then
-			if cache then
-				for _, e in pairs(cache) do e.Visible = false end
-			end
+			for _, e in pairs(cache) do e.Visible = false end
 			continue
 		end
 
 		local torsoPos, torsoOn = Camera:WorldToViewportPoint(torso.Position)
 		local headPos, headOn = Camera:WorldToViewportPoint(head.Position)
 		if not torsoOn then
-			if cache then
-				for _, e in pairs(cache) do e.Visible = false end
-			end
+			for _, e in pairs(cache) do e.Visible = false end
 			continue
 		end
 
@@ -149,10 +144,12 @@ function ESP:renderESP()
 			b.Visible = true
 			b.Position = boxPos
 			b.Size = Vector2.new(boxW, boxH)
+			cache.BoxOutline.Visible = true
 			cache.BoxOutline.Position = Vector2.new(boxPos.X - 1, boxPos.Y - 1)
 			cache.BoxOutline.Size = Vector2.new(boxW + 2, boxH + 2)
 		else
 			cache.BoxSquare.Visible = false
+			cache.BoxOutline.Visible = false
 		end
 
 		-- TRACER
@@ -214,8 +211,8 @@ function ESP:Cleanup()
 		self.State.ESPLoop:Disconnect()
 	end
 	local cache = self.State.Storage.ESPCache
-	for i = 1, #cache do
-		self.Utilities:uncacheObject(cache[i])
+	for obj in pairs(cache) do
+		self.Utilities:uncacheObject(obj)
 	end
 	self.State.PlayersToDraw = {}
 	self.State.CachedProperties = {}
