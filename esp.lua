@@ -65,14 +65,6 @@ function ESP:updatePlayerCache()
     self.State.PlayersToDraw = playersToDraw
 end
 
-function ESP:getTeamColor(player)
-    -- Safe team color retrieval with fallback
-    if player and player.Team then
-        return player.Team.TeamColor.Color
-    end
-    return Color3.fromRGB(255, 255, 255) -- Default white
-end
-
 function ESP:renderESP()
     local camPos = Camera.CFrame.Position
     local viewSize = Camera.ViewportSize
@@ -111,201 +103,138 @@ function ESP:renderESP()
                             e.Visible = false
                         end
                     else
-                        -- Improved scaling calculation
-                        local scale = math.clamp(1200 / distCam * 60 / Camera.FieldOfView, 0.8, 2.5)
-                        local boxW, boxH = math.floor(3.2 * scale), math.floor(5 * scale)
+                        local scale = 1000 / distCam * 80 / Camera.FieldOfView
+                        local boxW, boxH = math.floor(3 * scale), math.floor(4 * scale)
                         local boxPos = Vector2.new(torsoPos.X - boxW / 2, torsoPos.Y - boxH / 2)
                         local vis = self.Utilities:isVisible(head, self.Settings.ESP.VisibilityCheck)
                         
-                        -- Enhanced color system with team-based colors
-                        local teamColor = self:getTeamColor(p)
-                        local boxCol = vis and (self.Settings.ESP.Features.Box.UseTeamColor and teamColor or self.Settings.ESP.Features.Box.Color) or Color3.fromRGB(255, 60, 60)
-                        local outlineCol = Color3.fromRGB(20, 20, 20)
-                        local textCol = Color3.fromRGB(255, 255, 255)
+                        -- Enhanced color handling with smooth transitions
+                        local boxCol = vis and self.Settings.ESP.Features.Box.Color or Color3.fromRGB(255, 50, 50)
+                        local outlineCol = vis and Color3.fromRGB(20, 20, 20) or Color3.fromRGB(80, 20, 20)
+                        local textCol = vis and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(255, 150, 150)
                         
-                        -- Health-based coloring (optional)
-                        local humanoid = p.Character and p.Character:FindFirstChildOfClass("Humanoid")
-                        if humanoid and self.Settings.ESP.Features.Box.UseHealthColor then
-                            local healthPct = humanoid.Health / humanoid.MaxHealth
-                            if healthPct > 0.6 then
-                                boxCol = Color3.fromRGB(60, 255, 60) -- Green
-                            elseif healthPct > 0.3 then
-                                boxCol = Color3.fromRGB(255, 255, 60) -- Yellow
-                            else
-                                boxCol = Color3.fromRGB(255, 60, 60) -- Red
-                            end
+                        -- Calculate health-based color tint (if health info is available)
+                        local healthTint = Color3.fromRGB(255, 255, 255)
+                        if p.Character and p.Character:FindFirstChild("Humanoid") then
+                            local humanoid = p.Character.Humanoid
+                            local healthPercent = humanoid.Health / humanoid.MaxHealth
+                            healthTint = Color3.new(1, healthPercent, healthPercent)
                         end
 
-                        -- BOX: Enhanced with rounded corners and better outlines
                         if self.Settings.ESP.Features.Box.Enabled then
-                            -- Main box
+                            -- Enhanced box with multiple outlines for better visibility
                             cache.BoxSquare.Visible = true
                             cache.BoxSquare.Color = boxCol
                             cache.BoxSquare.Position = boxPos
                             cache.BoxSquare.Size = Vector2.new(boxW, boxH)
                             cache.BoxSquare.Thickness = 1.5
                             
-                            -- Outer outline (dark)
-                            cache.BoxOutline.Visible = true
-                            cache.BoxOutline.Color = outlineCol
+                            -- Main outline
                             cache.BoxOutline.Position = Vector2.new(boxPos.X - 2, boxPos.Y - 2)
                             cache.BoxOutline.Size = Vector2.new(boxW + 4, boxH + 4)
+                            cache.BoxOutline.Color = outlineCol
                             cache.BoxOutline.Thickness = 2
                             
-                            -- Inner glow (subtle)
-                            if cache.BoxInner then
-                                cache.BoxInner.Visible = true
-                                cache.BoxInner.Color = Color3.fromRGB(
-                                    math.min(255, boxCol.R * 255 * 1.3),
-                                    math.min(255, boxCol.G * 255 * 1.3), 
-                                    math.min(255, boxCol.B * 255 * 1.3)
-                                )
-                                cache.BoxInner.Position = Vector2.new(boxPos.X + 1, boxPos.Y + 1)
-                                cache.BoxInner.Size = Vector2.new(boxW - 2, boxH - 2)
-                                cache.BoxInner.Thickness = 1
-                            end
+                            -- Inner glow effect
+                            cache.BoxInner.Position = Vector2.new(boxPos.X + 1, boxPos.Y + 1)
+                            cache.BoxInner.Size = Vector2.new(boxW - 2, boxH - 2)
+                            cache.BoxInner.Color = Color3.new(boxCol.R * 1.3, boxCol.G * 1.3, boxCol.B * 1.3)
+                            cache.BoxInner.Thickness = 1
+                            cache.BoxInner.Transparency = 0.7
                         else
                             cache.BoxSquare.Visible = false
                             cache.BoxOutline.Visible = false
-                            if cache.BoxInner then
-                                cache.BoxInner.Visible = false
-                            end
+                            cache.BoxInner.Visible = false
                         end
 
-                        -- TRACER: Enhanced with fade effect and better positioning
                         if self.Settings.ESP.Features.Tracer.Enabled then
                             cache.TracerLine.Visible = true
-                            cache.TracerLine.Color = vis and (self.Settings.ESP.Features.Tracer.UseTeamColor and teamColor or self.Settings.ESP.Features.Tracer.Color) or Color3.fromRGB(255, 60, 60)
+                            cache.TracerLine.Color = vis and self.Settings.ESP.Features.Tracer.Color or Color3.fromRGB(255, 80, 80)
+                            cache.TracerLine.From = Vector2.new(viewSize.X / 2, viewSize.Y)
+                            cache.TracerLine.To = screenPos
                             cache.TracerLine.Thickness = 1.2
                             
-                            -- Tracer origin options (bottom center or top center)
-                            local tracerOrigin
-                            if self.Settings.ESP.Features.Tracer.FromTop then
-                                tracerOrigin = Vector2.new(viewSize.X / 2, 0)
-                            else
-                                tracerOrigin = Vector2.new(viewSize.X / 2, viewSize.Y)
-                            end
-                            
-                            cache.TracerLine.From = tracerOrigin
-                            cache.TracerLine.To = Vector2.new(torsoPos.X, torsoPos.Y + boxH/2)
+                            -- Tracer outline for better visibility
+                            cache.TracerOutline.Visible = true
+                            cache.TracerOutline.Color = Color3.fromRGB(20, 20, 20)
+                            cache.TracerOutline.From = Vector2.new(viewSize.X / 2, viewSize.Y)
+                            cache.TracerOutline.To = screenPos
+                            cache.TracerOutline.Thickness = 2.4
+                            cache.TracerOutline.Transparency = 0.3
                         else
                             cache.TracerLine.Visible = false
+                            cache.TracerOutline.Visible = false
                         end
 
-                        -- NAME: Enhanced with better typography and background
                         if self.Settings.ESP.Features.Name.Enabled and cachedProperties[p] then
                             cache.NameLabel.Visible = true
                             cache.NameLabel.Text = cachedProperties[p].Name
                             cache.NameLabel.Color = textCol
-                            cache.NameLabel.Size = math.max(14, math.min(18, scale * 3))
-                            cache.NameLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y - 20)
+                            cache.NameLabel.Size = math.max(14, math.min(18, scale * 2.8)) -- Slightly larger for better readability
+                            cache.NameLabel.Center = true
+                            cache.NameLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y - 18) -- More spacing
                             cache.NameLabel.Outline = true
-                            cache.NameLabel.OutlineColor = outlineCol
-                            
-                            -- Name background for better readability
-                            if cache.NameBackground then
-                                cache.NameBackground.Visible = true
-                                cache.NameBackground.Color = Color3.fromRGB(0, 0, 0)
-                                cache.NameBackground.Size = Vector2.new(cache.NameLabel.TextBounds.X + 8, cache.NameLabel.TextBounds.Y + 4)
-                                cache.NameBackground.Position = Vector2.new(boxPos.X + (boxW / 2) - cache.NameBackground.Size.X / 2, boxPos.Y - 22)
-                                cache.NameBackground.Filled = true
-                                cache.NameBackground.Transparency = 0.6
-                            end
+                            cache.NameLabel.OutlineColor = Color3.fromRGB(0, 0, 0)
+                            cache.NameLabel.Font = Drawing.Fonts.UI
                         else
                             cache.NameLabel.Visible = false
-                            if cache.NameBackground then
-                                cache.NameBackground.Visible = false
-                            end
                         end
 
-                        -- DISTANCE: Enhanced with icon and better formatting
                         if self.Settings.ESP.Features.DistanceText.Enabled then
                             cache.DistanceLabel.Visible = true
-                            local distanceText = string.format("%d", math.floor(distCam))
-                            if self.Settings.ESP.Features.DistanceText.ShowUnits then
-                                distanceText = distanceText .. "m"
-                            end
-                            cache.DistanceLabel.Text = distanceText
+                            cache.DistanceLabel.Text = math.floor(distCam) .. "m"
                             cache.DistanceLabel.Color = textCol
-                            cache.DistanceLabel.Size = math.max(12, math.min(16, scale * 2.8))
+                            cache.DistanceLabel.Size = math.max(12, math.min(16, scale * 2.3))
                             cache.DistanceLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y + boxH + 8)
                             cache.DistanceLabel.Outline = true
-                            cache.DistanceLabel.OutlineColor = outlineCol
-                            
-                            -- Distance background
-                            if cache.DistanceBackground then
-                                cache.DistanceBackground.Visible = true
-                                cache.DistanceBackground.Color = Color3.fromRGB(0, 0, 0)
-                                cache.DistanceBackground.Size = Vector2.new(cache.DistanceLabel.TextBounds.X + 8, cache.DistanceLabel.TextBounds.Y + 4)
-                                cache.DistanceBackground.Position = Vector2.new(boxPos.X + (boxW / 2) - cache.DistanceBackground.Size.X / 2, boxPos.Y + boxH + 6)
-                                cache.DistanceBackground.Filled = true
-                                cache.DistanceBackground.Transparency = 0.6
-                            end
+                            cache.DistanceLabel.OutlineColor = Color3.fromRGB(0, 0, 0)
+                            cache.DistanceLabel.Font = Drawing.Fonts.UI
                         else
                             cache.DistanceLabel.Visible = false
-                            if cache.DistanceBackground then
-                                cache.DistanceBackground.Visible = false
-                            end
                         end
 
-                        -- HEAD DOT: Enhanced with outline and dynamic sizing
                         if self.Settings.ESP.Features.HeadDot.Enabled and headOn then
                             cache.HeadDot.Visible = true
-                            cache.HeadDot.Color = self.Settings.ESP.Features.HeadDot.UseTeamColor and teamColor or self.Settings.ESP.Features.HeadDot.Color
-                            cache.HeadDot.Radius = math.max(2, math.min(6, boxH / 15))
+                            cache.HeadDot.Color = self.Settings.ESP.Features.HeadDot.Color
+                            cache.HeadDot.Radius = math.max(2, boxH / 15) -- Minimum size for visibility
                             cache.HeadDot.Position = Vector2.new(headPos.X, headPos.Y)
                             cache.HeadDot.Filled = true
                             
                             -- Head dot outline
-                            if cache.HeadDotOutline then
-                                cache.HeadDotOutline.Visible = true
-                                cache.HeadDotOutline.Color = outlineCol
-                                cache.HeadDotOutline.Radius = cache.HeadDot.Radius + 1
-                                cache.HeadDotOutline.Position = Vector2.new(headPos.X, headPos.Y)
-                                cache.HeadDotOutline.Filled = false
-                                cache.HeadDotOutline.Thickness = 1.5
-                            end
+                            cache.HeadDotOutline.Visible = true
+                            cache.HeadDotOutline.Color = outlineCol
+                            cache.HeadDotOutline.Radius = cache.HeadDot.Radius + 1
+                            cache.HeadDotOutline.Position = Vector2.new(headPos.X, headPos.Y)
+                            cache.HeadDotOutline.Filled = false
+                            cache.HeadDotOutline.Thickness = 1.5
                         else
                             cache.HeadDot.Visible = false
-                            if cache.HeadDotOutline then
-                                cache.HeadDotOutline.Visible = false
-                            end
+                            cache.HeadDotOutline.Visible = false
                         end
 
-                        -- HEALTH BAR: New feature for professional ESP
-                        if self.Settings.ESP.Features.HealthBar.Enabled and humanoid then
-                            local healthPct = humanoid.Health / humanoid.MaxHealth
-                            local barWidth = 3
-                            local barHeight = boxH
-                            local barX = boxPos.X - 6
-                            local barY = boxPos.Y
+                        -- Health bar (new feature)
+                        if self.Settings.ESP.Features.HealthBar.Enabled and p.Character and p.Character:FindFirstChild("Humanoid") then
+                            local humanoid = p.Character.Humanoid
+                            local healthPercent = humanoid.Health / humanoid.MaxHealth
                             
-                            -- Health bar background
-                            if cache.HealthBarBackground then
-                                cache.HealthBarBackground.Visible = true
-                                cache.HealthBarBackground.Color = Color3.fromRGB(40, 40, 40)
-                                cache.HealthBarBackground.Size = Vector2.new(barWidth, barHeight)
-                                cache.HealthBarBackground.Position = Vector2.new(barX, barY)
-                                cache.HealthBarBackground.Filled = true
-                                cache.HealthBarBackground.Transparency = 0.4
-                            end
+                            cache.HealthBarBG.Visible = true
+                            cache.HealthBarBG.Position = Vector2.new(boxPos.X - 6, boxPos.Y)
+                            cache.HealthBarBG.Size = Vector2.new(3, boxH)
+                            cache.HealthBarBG.Color = Color3.fromRGB(40, 40, 40)
+                            cache.HealthBarBG.Filled = true
                             
-                            -- Health bar fill
-                            if cache.HealthBar then
-                                local healthHeight = math.floor(barHeight * healthPct)
-                                cache.HealthBar.Visible = true
-                                cache.HealthBar.Color = Color3.fromRGB(255 * (1 - healthPct), 255 * healthPct, 60)
-                                cache.HealthBar.Size = Vector2.new(barWidth, healthHeight)
-                                cache.HealthBar.Position = Vector2.new(barX, barY + (barHeight - healthHeight))
-                                cache.HealthBar.Filled = true
-                            end
+                            cache.HealthBar.Visible = true
+                            local healthHeight = math.floor(boxH * healthPercent)
+                            cache.HealthBar.Position = Vector2.new(boxPos.X - 6, boxPos.Y + (boxH - healthHeight))
+                            cache.HealthBar.Size = Vector2.new(3, healthHeight)
+                            
+                            -- Gradient health color (green to red based on health)
+                            local healthColor = Color3.new(2 - healthPercent * 2, healthPercent * 2, 0)
+                            cache.HealthBar.Color = healthColor
+                            cache.HealthBar.Filled = true
                         else
-                            if cache.HealthBar then
-                                cache.HealthBar.Visible = false
-                            end
-                            if cache.HealthBarBackground then
-                                cache.HealthBarBackground.Visible = false
-                            end
+                            cache.HealthBar.Visible = false
+                            cache.HealthBarBG.Visible = false
                         end
                     end
                 end
