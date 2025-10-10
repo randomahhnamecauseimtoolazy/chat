@@ -3,14 +3,26 @@ local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 
 function ESP:Init(Settings, State, Utilities)
-    self.Settings = Settings
-    self.State = State
-    self.Utilities = Utilities
+    self.Settings = Settings or {}
+    self.State = State or {}
+    self.Utilities = Utilities or {}
+    -- Initialize default ESP settings if not provided
+    self.Settings.ESP = self.Settings.ESP or {
+        MaxDistance = { Enabled = true, Value = 1000 },
+        UseFOV = true,
+        VisibilityCheck = true,
+        Features = {
+            Box = { Enabled = true, Color = Color3.fromRGB(0, 255, 0), Gradient = true },
+            Tracer = { Enabled = true, Color = Color3.fromRGB(0, 255, 0) },
+            Name = { Enabled = true, Color = Color3.fromRGB(255, 255, 255) },
+            DistanceText = { Enabled = true, Color = Color3.fromRGB(255, 255, 255) },
+            HeadDot = { Enabled = true, Color = Color3.fromRGB(255, 0, 0) }
+        }
+    }
 end
 
 function ESP:initializeESP()
-    -- Clear cache using indexed loop for performance
-    local cache = self.State.Storage.ESPCache
+    local cache = self.State.Storage and self.State.Storage.ESPCache or {}
     for i = 1, #cache do
         self.Utilities:uncacheObject(cache[i])
     end
@@ -19,8 +31,8 @@ function ESP:initializeESP()
 end
 
 function ESP:cleanupStalePlayers()
-    local cache = self.State.Storage.ESPCache
-    for i = #cache, 1, -1 do -- Reverse to safely remove elements
+    local cache = self.State.Storage and self.State.Storage.ESPCache or {}
+    for i = #cache, 1, -1 do
         local p = cache[i]
         if not self.Utilities:isValidPlayer(p) then
             self.Utilities:uncacheObject(p)
@@ -33,13 +45,13 @@ end
 function ESP:updatePlayerCache()
     self:cleanupStalePlayers()
     local playersToDraw = {}
-    local cachedProperties = self.State.CachedProperties
-    local settings = self.Settings.ESP
-    local maxDistEnabled = settings.MaxDistance.Enabled
-    local maxDistValue = settings.MaxDistance.Value
+    local cachedProperties = self.State.CachedProperties or {}
+    local settings = self.Settings.ESP or {}
+    local maxDistEnabled = settings.MaxDistance and settings.MaxDistance.Enabled or true
+    local maxDistValue = settings.MaxDistance and settings.MaxDistance.Value or 1000
     local cameraPos = Camera.CFrame.Position
 
-    for _, p in ipairs(self.Utilities:getPlayers()) do
+    for _, p in ipairs(self.Utilities:getPlayers() or {}) do
         if self.Utilities:isValidPlayer(p) and self.Utilities:isEnemy(p) then
             local torso, head = self.Utilities:getBodyPart(p, "Torso"), self.Utilities:getBodyPart(p, "Head")
             if torso and head then
@@ -66,14 +78,30 @@ function ESP:updatePlayerCache()
 end
 
 function ESP:renderESP()
+    if not self.Settings.ESP then
+        warn("ESP settings not initialized. Using default settings.")
+        self.Settings.ESP = {
+            MaxDistance = { Enabled = true, Value = 1000 },
+            UseFOV = true,
+            VisibilityCheck = true,
+            Features = {
+                Box = { Enabled = true, Color = Color3.fromRGB(0, 255, 0), Gradient = true },
+                Tracer = { Enabled = true, Color = Color3.fromRGB(0, 255, 0) },
+                Name = { Enabled = true, Color = Color3.fromRGB(255, 255, 255) },
+                DistanceText = { Enabled = true, Color = Color3.fromRGB(255, 255, 255) },
+                HeadDot = { Enabled = true, Color = Color3.fromRGB(255, 0, 0) }
+            }
+        }
+    end
+
     local camPos = Camera.CFrame.Position
     local viewSize = Camera.ViewportSize
     local center = Vector2.new(viewSize.X / 2, viewSize.Y)
-    local fovRad = self.Settings.FOV.OutlineCircle.Radius
-    local useFOV = self.Settings.ESP.UseFOV
-    local cacheTable = self.State.Storage.ESPCache
-    local playersToDraw = self.State.PlayersToDraw
-    local cachedProperties = self.State.CachedProperties
+    local fovRad = self.Settings.FOV and self.Settings.FOV.OutlineCircle and self.Settings.FOV.OutlineCircle.Radius or 100
+    local useFOV = self.Settings.ESP.UseFOV or true
+    local cacheTable = self.State.Storage and self.State.Storage.ESPCache or {}
+    local playersToDraw = self.State.PlayersToDraw or {}
+    local cachedProperties = self.State.CachedProperties or {}
     local settings = self.Settings.ESP
 
     for i = 1, #playersToDraw do
@@ -85,14 +113,14 @@ function ESP:renderESP()
             local cache = cacheTable[p] or (self.Utilities:cacheObject(p) and cacheTable[p])
             local torso, head = self.Utilities:getBodyPart(p, "Torso"), self.Utilities:getBodyPart(p, "Head")
             if not torso or not head then
-                for _, e in ipairs(cache) do
+                for _, e in ipairs(cache or {}) do
                     e.Visible = false
                 end
             else
                 local torsoPos, torsoOn = Camera:WorldToViewportPoint(torso.Position)
                 local headPos, headOn = Camera:WorldToViewportPoint(head.Position)
                 if not torsoOn then
-                    for _, e in ipairs(cache) do
+                    for _, e in ipairs(cache or {}) do
                         e.Visible = false
                     end
                 else
@@ -100,7 +128,7 @@ function ESP:renderESP()
                     local screenPos = Vector2.new(torsoPos.X, torsoPos.Y)
                     local distCenter = (screenPos - center).Magnitude
                     if useFOV and distCenter > fovRad then
-                        for _, e in ipairs(cache) do
+                        for _, e in ipairs(cache or {}) do
                             e.Visible = false
                         end
                     else
@@ -108,10 +136,10 @@ function ESP:renderESP()
                         local boxW, boxH = math.floor(3.5 * scale), math.floor(5 * scale)
                         local boxPos = Vector2.new(torsoPos.X - boxW / 2, torsoPos.Y - boxH / 2)
                         local vis = self.Utilities:isVisible(head, settings.VisibilityCheck)
-                        local baseColor = vis and settings.ESP.Features.Box.Color or Color3.fromRGB(255, 0, 0)
-                        local gradientColor = settings.ESP.Features.Box.Gradient and Color3.fromRGB(baseColor.R * 255 * 0.7, baseColor.G * 255 * 0.7, baseColor.B * 255 * 0.7) or baseColor
+                        local baseColor = settings.Features.Box.Color or Color3.fromRGB(0, 255, 0)
+                        local gradientColor = settings.Features.Box.Gradient and Color3.fromRGB(baseColor.R * 255 * 0.7, baseColor.G * 255 * 0.7, baseColor.B * 255 * 0.7) or baseColor
 
-                        if settings.ESP.Features.Box.Enabled then
+                        if settings.Features.Box.Enabled then
                             cache.BoxSquare.Visible = true
                             cache.BoxSquare.Color = baseColor
                             cache.BoxSquare.Position = boxPos
@@ -125,9 +153,9 @@ function ESP:renderESP()
                             cache.BoxOutline.Visible = false
                         end
 
-                        if settings.ESP.Features.Tracer.Enabled then
+                        if settings.Features.Tracer.Enabled then
                             cache.TracerLine.Visible = true
-                            cache.TracerLine.Color = vis and settings.ESP.Features.Tracer.Color or Color3.fromRGB(255, 0, 0)
+                            cache.TracerLine.Color = vis and settings.Features.Tracer.Color or Color3.fromRGB(255, 0, 0)
                             cache.TracerLine.From = Vector2.new(viewSize.X / 2, viewSize.Y * 0.9)
                             cache.TracerLine.To = screenPos
                             cache.TracerLine.Thickness = math.max(1, scale / 20)
@@ -139,10 +167,10 @@ function ESP:renderESP()
                             cache.TracerLine.Visible = false
                         end
 
-                        if settings.ESP.Features.Name.Enabled and cachedProperties[p] then
+                        if settings.Features.Name.Enabled and cachedProperties[p] then
                             cache.NameLabel.Visible = true
                             cache.NameLabel.Text = cachedProperties[p].Name
-                            cache.NameLabel.Color = settings.ESP.Features.Name.Color
+                            cache.NameLabel.Color = settings.Features.Name.Color
                             cache.NameLabel.Size = math.max(14, math.min(18, scale * 2.8))
                             cache.NameLabel.Center = true
                             cache.NameLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y - 20)
@@ -154,10 +182,10 @@ function ESP:renderESP()
                             cache.NameLabel.Visible = false
                         end
 
-                        if settings.ESP.Features.DistanceText.Enabled then
+                        if settings.Features.DistanceText.Enabled then
                             cache.DistanceLabel.Visible = true
                             cache.DistanceLabel.Text = math.floor(distCam) .. " studs"
-                            cache.DistanceLabel.Color = settings.ESP.Features.DistanceText.Color
+                            cache.DistanceLabel.Color = settings.Features.DistanceText.Color
                             cache.DistanceLabel.Size = math.max(12, math.min(16, scale * 2.3))
                             cache.DistanceLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y + boxH + 10)
                             cache.DistanceLabel.Outline = true
@@ -168,9 +196,9 @@ function ESP:renderESP()
                             cache.DistanceLabel.Visible = false
                         end
 
-                        if settings.ESP.Features.HeadDot.Enabled and headOn then
+                        if settings.Features.HeadDot.Enabled and headOn then
                             cache.HeadDot.Visible = true
-                            cache.HeadDot.Color = settings.ESP.Features.HeadDot.Color
+                            cache.HeadDot.Color = settings.Features.HeadDot.Color
                             cache.HeadDot.Radius = math.max(4, boxH / 15)
                             cache.HeadDot.Position = Vector2.new(headPos.X, headPos.Y)
                             cache.HeadDot.NumSides = 32
@@ -192,7 +220,7 @@ function ESP:Cleanup()
     if self.State.ESPLoop then
         self.State.ESPLoop:Disconnect()
     end
-    local cache = self.State.Storage.ESPCache
+    local cache = self.State.Storage and self.State.Storage.ESPCache or {}
     for i = 1, #cache do
         self.Utilities:uncacheObject(cache[i])
     end
