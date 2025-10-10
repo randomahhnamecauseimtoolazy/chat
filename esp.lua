@@ -114,26 +114,17 @@ function ESP:renderESP()
                             cache.BoxSquare.Color = boxCol
                             cache.BoxSquare.Position = boxPos
                             cache.BoxSquare.Size = Vector2.new(boxW, boxH)
-                            cache.BoxSquare.Filled = false  -- Ensure it's an outline-friendly square
-                            cache.BoxSquare.Thickness = 2  -- Thicker for better visibility
-                            
-                            cache.BoxOutline.Visible = true
-                            cache.BoxOutline.Color = Color3.new(0, 0, 0)  -- Black outline for contrast
                             cache.BoxOutline.Position = Vector2.new(boxPos.X - 1, boxPos.Y - 1)
                             cache.BoxOutline.Size = Vector2.new(boxW + 2, boxH + 2)
-                            cache.BoxOutline.Thickness = 3  -- Slightly thicker shadow
                         else
                             cache.BoxSquare.Visible = false
-                            cache.BoxOutline.Visible = false
                         end
 
                         if self.Settings.ESP.Features.Tracer.Enabled then
                             cache.TracerLine.Visible = true
                             cache.TracerLine.Color = vis and self.Settings.ESP.Features.Tracer.Color or Color3.fromRGB(255, 0, 0)
-                            cache.TracerLine.Thickness = 2  -- Thicker tracer for professionalism
-                            cache.TracerLine.Transparency = 0  -- Fully opaque
-                            cache.TracerLine.From = Vector2.new(viewSize.X / 2, viewSize.Y)  -- From bottom center
-                            cache.TracerLine.To = Vector2.new(boxPos.X + boxW / 2, boxPos.Y + boxH)  -- To bottom of box for snap
+                            cache.TracerLine.From = Vector2.new(viewSize.X / 2, viewSize.Y)
+                            cache.TracerLine.To = screenPos
                         else
                             cache.TracerLine.Visible = false
                         end
@@ -141,17 +132,11 @@ function ESP:renderESP()
                         if self.Settings.ESP.Features.Name.Enabled and cachedProperties[p] then
                             cache.NameLabel.Visible = true
                             cache.NameLabel.Text = cachedProperties[p].Name
-                            cache.NameLabel.TextColor3 = self.Settings.ESP.Features.Name.Color
-                            cache.NameLabel.BackgroundTransparency = 0.5  -- Slight background for readability
-                            cache.NameLabel.BackgroundColor3 = Color3.new(0, 0, 0)
-                            cache.NameLabel.Font = Enum.Font.GothamBold  -- Modern, professional font
-                            cache.NameLabel.TextSize = math.max(12, math.min(16, scale * 2.5))
-                            cache.NameLabel.TextStrokeTransparency = 0.5  -- Softer stroke
-                            cache.NameLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
-                            cache.NameLabel.Size = UDim2.new(0, 200, 0, 20)  -- Fixed width for alignment
-                            cache.NameLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y - 20)
-                            cache.NameLabel.ClipsDescendants = true
-                            cache.NameLabel.TextXAlignment = Enum.TextXAlignment.Center
+                            cache.NameLabel.Color = self.Settings.ESP.Features.Name.Color
+                            cache.NameLabel.Size = math.max(12, math.min(16, scale * 2.5))
+                            cache.NameLabel.Center = true
+                            cache.NameLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y - 15)
+                            cache.NameLabel.Outline = true
                         else
                             cache.NameLabel.Visible = false
                         end
@@ -159,17 +144,10 @@ function ESP:renderESP()
                         if self.Settings.ESP.Features.DistanceText.Enabled then
                             cache.DistanceLabel.Visible = true
                             cache.DistanceLabel.Text = math.floor(distCam) .. " studs"
-                            cache.DistanceLabel.TextColor3 = self.Settings.ESP.Features.DistanceText.Color
-                            cache.DistanceLabel.BackgroundTransparency = 0.5
-                            cache.DistanceLabel.BackgroundColor3 = Color3.new(0, 0, 0)
-                            cache.DistanceLabel.Font = Enum.Font.Gotham
-                            cache.DistanceLabel.TextSize = math.max(14, math.min(18, scale * 2.5))
-                            cache.DistanceLabel.TextStrokeTransparency = 0.5
-                            cache.DistanceLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
-                            cache.DistanceLabel.Size = UDim2.new(0, 200, 0, 20)
-                            cache.DistanceLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y + boxH)
-                            cache.DistanceLabel.ClipsDescendants = true
-                            cache.DistanceLabel.TextXAlignment = Enum.TextXAlignment.Center
+                            cache.DistanceLabel.Color = self.Settings.ESP.Features.DistanceText.Color
+                            cache.DistanceLabel.Size = math.max(14, math.min(18, scale * 2.5))
+                            cache.DistanceLabel.Position = Vector2.new(boxPos.X + (boxW / 2), boxPos.Y + boxH + 5)
+                            cache.DistanceLabel.Outline = true
                         else
                             cache.DistanceLabel.Visible = false
                         end
@@ -177,23 +155,10 @@ function ESP:renderESP()
                         if self.Settings.ESP.Features.HeadDot.Enabled and headOn then
                             cache.HeadDot.Visible = true
                             cache.HeadDot.Color = self.Settings.ESP.Features.HeadDot.Color
-                            cache.HeadDot.Filled = true  -- Filled circle for dot
-                            cache.HeadDot.Thickness = 1.5
-                            cache.HeadDot.Radius = math.max(3, boxH / 10)  -- Larger, more noticeable
+                            cache.HeadDot.Radius = boxH / 20
                             cache.HeadDot.Position = Vector2.new(headPos.X, headPos.Y)
-                            cache.HeadDot.NumSides = 32  -- Smoother circle
-                            
-                            -- Add outline to head dot for better visibility
-                            if cache.HeadDotOutline then
-                                cache.HeadDotOutline.Visible = true
-                                cache.HeadDotOutline.Color = Color3.new(0, 0, 0)
-                                cache.HeadDotOutline.Radius = cache.HeadDot.Radius + 1
-                                cache.HeadDotOutline.Position = Vector2.new(headPos.X, headPos.Y)
-                                cache.HeadDotOutline.NumSides = 32
-                            end
                         else
                             cache.HeadDot.Visible = false
-                            if cache.HeadDotOutline then cache.HeadDotOutline.Visible = false end
                         end
                     end
                 end
