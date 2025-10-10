@@ -1,0 +1,71 @@
+local Misc = {}
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+
+function Misc:Init(Settings, State)
+    self.Settings = Settings
+    self.State = State
+end
+
+function Misc:storeOriginalProperties(inst)
+    if inst:IsA("BasePart") or inst:IsA("UnionOperation") or inst:IsA("MeshPart") then
+        self.State.OriginalProperties[inst] = {
+            Material = inst.Material,
+            Reflectance = inst.Reflectance,
+            CastShadow = inst.CastShadow,
+            TextureId = inst:FindFirstChild("TextureId") and inst.TextureId or nil
+        }
+    end
+end
+
+function Misc:optimizeMap()
+    local map = workspace:FindFirstChild("Map")
+    if not map then return end
+    for _, inst in pairs(map:GetDescendants()) do
+        self:storeOriginalProperties(inst)
+        if inst:IsA("BasePart") or inst:IsA("UnionOperation") or inst:IsA("MeshPart") then
+            inst.Material = Enum.Material.SmoothPlastic
+            inst.Reflectance = 0
+            inst.CastShadow = false
+            if inst:IsA("MeshPart") and inst:FindFirstChild("TextureId") then inst.TextureId = "" end
+        end
+    end
+    self.Settings.Misc.Optimized = true
+end
+
+function Misc:revertMap()
+    local map = workspace:FindFirstChild("Map")
+    if not map then return end
+    for _, inst in pairs(map:GetDescendants()) do
+        local props = self.State.OriginalProperties[inst]
+        if props then
+            inst.Material = props.Material
+            inst.Reflectance = props.Reflectance
+            inst.CastShadow = props.CastShadow
+            if inst:IsA("MeshPart") and inst:FindFirstChild("TextureId") then inst.TextureId = props.TextureId or "" end
+        end
+    end
+    self.Settings.Misc.Optimized = false
+end
+
+function Misc:kickAndRejoin()
+    Players.LocalPlayer:Kick("[THIS IS NOT A VOTEKICK!] You've been blocked from being votekicked, Rejoining...")
+    TeleportService:Teleport(game.PlaceId)
+end
+
+function Misc:initializeVotekickRejoiner()
+    local displayVoteKick = Players.LocalPlayer.PlayerGui.ChatScreenGui.Main.DisplayVoteKick
+    displayVoteKick:GetPropertyChangedSignal("Visible"):Connect(function()
+        if displayVoteKick.Visible and self.Settings.Misc.VotekickRejoiner then
+            local words = {}
+            for w in displayVoteKick.TextTitle.Text:gmatch("%S+") do table.insert(words, w) end
+            if words[2] == Players.LocalPlayer.Name then self:kickAndRejoin() end
+        end
+    end)
+end
+
+function Misc:Cleanup()
+    if self.Settings.Misc.Optimized then self:revertMap() end
+end
+
+return Misc

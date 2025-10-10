@@ -1,0 +1,64 @@
+local FOV = {}
+local Camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+
+function FOV:Init(Settings, State)
+    self.Settings = Settings
+    self.State = State
+    self.Settings.FOV.Circle.Visible = false
+    self.Settings.FOV.Circle.Filled = self.Settings.FOV.Filled
+    self.Settings.FOV.Circle.Color = self.Settings.FOV.FillColor
+    self.Settings.FOV.Circle.Transparency = self.Settings.FOV.FillTransparency
+    self.Settings.FOV.Circle.Thickness = 0
+    self.Settings.FOV.Circle.Radius = self.Settings.FOV.Radius
+    self.Settings.FOV.Circle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    self.Settings.FOV.OutlineCircle.Filled = false
+    self.Settings.FOV.OutlineCircle.Color = self.Settings.FOV.OutlineColor
+    self.Settings.FOV.OutlineCircle.Transparency = self.Settings.FOV.OutlineTransparency
+    self.Settings.FOV.OutlineCircle.Thickness = 1
+    self.Settings.FOV.OutlineCircle.Radius = self.Settings.FOV.Radius
+    self.Settings.FOV.OutlineCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    self.Settings.FOV.OutlineCircle.Visible = self.Settings.FOV.Enabled
+    Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function() self:updateFOVCirclePosition() end)
+    RunService.Heartbeat:Connect(function() self:updateFOVCirclePosition() end)
+end
+
+function FOV:updateFOVCirclePosition()
+    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    if self.Settings.FOV.Enabled then
+        if self.Settings.FOV.FollowGun then
+            local barrel = self.Utilities:getGunBarrel()
+            if barrel then
+                local pos, onScreen = Camera:WorldToViewportPoint(barrel.Position)
+                if onScreen then
+                    if self.State.IsRightClickHeld and math.abs(pos.X - center.X) <= 10 then
+                        self.Settings.FOV.Circle.Position = center
+                        self.Settings.FOV.OutlineCircle.Position = center
+                    else
+                        self.Settings.FOV.Circle.Position = Vector2.new(pos.X, pos.Y)
+                        self.Settings.FOV.OutlineCircle.Position = Vector2.new(pos.X, pos.Y)
+                    end
+                else
+                    self.Settings.FOV.Circle.Position = center
+                    self.Settings.FOV.OutlineCircle.Position = center
+                end
+            else
+                self.Settings.FOV.Circle.Position = center
+                self.Settings.FOV.OutlineCircle.Position = center
+            end
+        else
+            self.Settings.FOV.Circle.Position = center
+            self.Settings.FOV.OutlineCircle.Position = center
+        end
+    else
+        self.Settings.FOV.Circle.Position = center
+        self.Settings.FOV.OutlineCircle.Position = center
+    end
+end
+
+function FOV:Cleanup()
+    self.Settings.FOV.Circle:Remove()
+    self.Settings.FOV.OutlineCircle:Remove()
+end
+
+return FOV

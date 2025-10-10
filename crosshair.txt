@@ -1,0 +1,94 @@
+local Crosshair = {}
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+
+function Crosshair:Init(Settings, State)
+    self.Settings = Settings
+    self.State = State
+    self:initializeCrosshair()
+end
+
+function Crosshair:initializeCrosshair()
+    for _, d in pairs(self.Settings.Crosshair.Drawings) do d.Visible = false end
+end
+
+function Crosshair:updateCrosshair()
+    if not self.Settings.Crosshair.Enabled then return end
+    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    local size, gap, thickness, color, transparency = self.Settings.Crosshair.Size, self.Settings.Crosshair.Gap, self.Settings.Crosshair.Thickness, self.Settings.Crosshair.Color, self.Settings.Crosshair.Transparency
+    local lines = self.Settings.Crosshair.Drawings
+    if self.Settings.Crosshair.TStyle == "Default" then
+        lines.Line1.Visible = true
+        lines.Line1.From = Vector2.new(center.X, center.Y - gap - size)
+        lines.Line1.To = Vector2.new(center.X, center.Y - gap)
+        lines.Line1.Color = color
+        lines.Line1.Thickness = thickness
+        lines.Line1.Transparency = transparency
+        lines.Line2.Visible = true
+        lines.Line2.From = Vector2.new(center.X, center.Y + gap)
+        lines.Line2.To = Vector2.new(center.X, center.Y + gap + size)
+        lines.Line2.Color = color
+        lines.Line2.Thickness = thickness
+        lines.Line2.Transparency = transparency
+        lines.Line3.Visible = true
+        lines.Line3.From = Vector2.new(center.X - gap - size, center.Y)
+        lines.Line3.To = Vector2.new(center.X - gap, center.Y)
+        lines.Line3.Color = color
+        lines.Line3.Thickness = thickness
+        lines.Line3.Transparency = transparency
+        lines.Line4.Visible = true
+        lines.Line4.From = Vector2.new(center.X + gap, center.Y)
+        lines.Line4.To = Vector2.new(center.X + gap + size, center.Y)
+        lines.Line4.Color = color
+        lines.Line4.Thickness = thickness
+        lines.Line4.Transparency = transparency
+        lines.CenterDot.Visible = self.Settings.Crosshair.Dot
+        lines.CenterDot.Position = center
+        lines.CenterDot.Radius = thickness
+        lines.CenterDot.Color = color
+        lines.CenterDot.Transparency = transparency
+        lines.CenterDot.Filled = true
+    else -- Plus
+        lines.Line1.Visible = true
+        lines.Line1.From = Vector2.new(center.X - size - gap, center.Y)
+        lines.Line1.To = Vector2.new(center.X + size + gap, center.Y)
+        lines.Line1.Color = color
+        lines.Line1.Thickness = thickness
+        lines.Line1.Transparency = transparency
+        lines.Line2.Visible = true
+        lines.Line2.From = Vector2.new(center.X, center.Y - size - gap)
+        lines.Line2.To = Vector2.new(center.X, center.Y + size + gap)
+        lines.Line2.Color = color
+        lines.Line2.Thickness = thickness
+        lines.Line2.Transparency = transparency
+        lines.Line3.Visible = false
+        lines.Line4.Visible = false
+        lines.CenterDot.Visible = self.Settings.Crosshair.Dot
+        lines.CenterDot.Position = center
+        lines.CenterDot.Radius = thickness
+        lines.CenterDot.Color = color
+        lines.CenterDot.Transparency = transparency
+        lines.CenterDot.Filled = true
+    end
+end
+
+function Crosshair:toggleCrosshair(state)
+    if state then
+        self.State.CrosshairUpdate = RunService.RenderStepped:Connect(function() self:updateCrosshair() end)
+    else
+        if self.State.CrosshairUpdate then
+            self.State.CrosshairUpdate:Disconnect()
+            self.State.CrosshairUpdate = nil
+        end
+        for _, d in pairs(self.Settings.Crosshair.Drawings) do d.Visible = false end
+    end
+end
+
+function Crosshair:Cleanup()
+    if self.State.CrosshairUpdate then
+        self.State.CrosshairUpdate:Disconnect()
+    end
+    for _, d in pairs(self.Settings.Crosshair.Drawings) do d:Remove() end
+end
+
+return Crosshair

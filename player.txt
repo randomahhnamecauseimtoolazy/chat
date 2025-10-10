@@ -1,0 +1,30 @@
+local PlayerMod = {}
+local UserInputService = game:GetService("UserInputService")
+
+function PlayerMod:Init(Settings, State)
+    self.Settings = Settings
+    self.State = State
+    self.lastJumpTime = 0
+    self.jumpCooldown = 0.8125
+    UserInputService.InputBegan:Connect(function(i, gp)
+        if gp then return end
+        if i.KeyCode == Enum.KeyCode.Space then self:handleBhop() end
+    end)
+end
+
+function PlayerMod:handleBhop()
+    if self.Settings.Player.Bhop.Enabled then
+        local t = tick()
+        if (t - self.lastJumpTime) < self.jumpCooldown then
+            local hum = self.Utilities:getCharacter():FindFirstChildOfClass("Humanoid")
+            if hum then hum.Jump = true end
+        end
+        self.lastJumpTime = t
+    end
+end
+
+function PlayerMod:Cleanup()
+    -- No connections to clean up as InputBegan is handled globally
+end
+
+return PlayerMod
