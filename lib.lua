@@ -4578,3 +4578,7 @@ function Renderer:Text(name, position, text, color, size, font)
 
     return Shape
 end
+
+
+getgenv().SaveManager = SaveManager
+getgenv().ThemeManager = ThemeManager
