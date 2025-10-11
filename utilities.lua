@@ -1,4 +1,5 @@
 local Utilities = {}
+local drawhelper = loadstring(game:HttpGet("https://raw.githubusercontent.com/bottomnoah/UI/refs/heads/main/drawing"))()
 local Camera = game:GetService("Workspace").CurrentCamera
 local Players = game:GetService("Players")
 local Teams = game:GetService("Teams")
@@ -55,12 +56,12 @@ function Utilities:cacheObject(object)
     if cache[object] then return end
 
     local drawings = {
-        BoxSquare = Drawing.new("Square"),
-        BoxOutline = Drawing.new("Square"),
-        TracerLine = Drawing.new("Line"),
-        DistanceLabel = Drawing.new("Text"),
-        NameLabel = Drawing.new("Text"),
-        HeadDot = Drawing.new("Circle")
+        BoxSquare = drawing.new("Square"),
+        BoxOutline = drawing.new("Square"),
+        TracerLine = drawing.new("Line"),
+        DistanceLabel = drawing.new("Text"),
+        NameLabel = drawing.new("Text"),
+        HeadDot = drawing.new("Circle")
     }
 
     for _, drawing in pairs(drawings) do
