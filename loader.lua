@@ -1,6 +1,5 @@
 -- // Library Imports \\
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bottomnoah/UI/refs/heads/main/cola.lua"))()
-local drawhelper = loadstring(game:HttpGet("https://raw.githubusercontent.com/bottomnoah/UI/refs/heads/main/drawing"))()
 
 -- // Services \\
 local RunService = game:GetService("RunService")
