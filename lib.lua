@@ -1,10 +1,3 @@
-local Redacted = {
-    Username = OverrideUserSettings and 'admin' or 'user1',
-    Build = OverrideUserSettings and 'developer' or 'live',
-
-    Accent = Color3.fromRGB(140, 130, 255),
-}
-
 -- UI Library
 local InputService = game:GetService('UserInputService')
 local TextService = game:GetService('TextService')
