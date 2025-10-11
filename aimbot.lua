@@ -3,81 +3,77 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local Camera = workspace.CurrentCamera
-local Vector2_new = Vector2.new
-local math_huge = math.huge
 
 function Aimbot:Init(Settings, State, Utilities)
     self.Settings = Settings
     self.State = State
     self.Utilities = Utilities
     self.Settings.Aimbot.Easing.Sensitivity.Value = self.Settings.Aimbot.Easing.Strength
-    self.Center = Vector2_new(Camera.ViewportSize.X * 0.5, Camera.ViewportSize.Y * 0.5)
 end
 
-function Aimbot:SafeMouseMoveRel(x, y)
-    local mousemoverel = mousemoverel
-    if mousemoverel then
+function Aimbot:safeMouseMoveRel(x, y)
+    if type(mousemoverel) == "function" then
         pcall(mousemoverel, x, y)
     end
 end
 
-function Aimbot:PreloadMouse()
+function Aimbot:preloadMouse()
     local t = tick()
-    local preload = self.State.MousePreload
-    if t - preload.LastTime >= preload.Interval then
-        self:SafeMouseMoveRel(0.01, 0.01)
-        preload.LastTime = t
+    if t - self.State.MousePreload.LastTime >= self.State.MousePreload.Interval then
+        self:safeMouseMoveRel(0.01, 0.01)
+        self.State.MousePreload.LastTime = t
     end
 end
 
-function Aimbot:StartMousePreload()
-    local preload = self.State.MousePreload
-    if preload.Active then return end
-    preload.Active = true
-    preload.Connection = RunService.Heartbeat:Connect(function()
-        self:PreloadMouse()
-    end)
+function Aimbot:startMousePreload()
+    if self.State.MousePreload.Active then return end
+    self.State.MousePreload.Active = true
+    self.State.MousePreload.Connection = RunService.Heartbeat:Connect(function() self:preloadMouse() end)
 end
 
-function Aimbot:StopMousePreload()
-    local preload = self.State.MousePreload
-    if not preload.Active then return end
-    preload.Active = false
-    if preload.Connection then
-        preload.Connection:Disconnect()
-        preload.Connection = nil
+function Aimbot:stopMousePreload()
+    if not self.State.MousePreload.Active then return end
+    self.State.MousePreload.Active = false
+    if self.State.MousePreload.Connection then
+        self.State.MousePreload.Connection:Disconnect()
+        self.State.MousePreload.Connection = nil
     end
 end
 
-function Aimbot:GetClosestPlayer()
-    local closest, shortestDist = nil, math_huge
-    local center = self.Center
-    local settings = self.Settings
-    local fovEnabled = settings.FOV.Enabled
-    local fovRadius = settings.FOV.Radius
-    local maxDistanceEnabled = settings.Aimbot.MaxDistance.Enabled
-    local maxDistance = settings.Aimbot.MaxDistance.Value
-    local teamCheck = settings.Chams.TeamCheck
-    local hitPart = settings.Aimbot.HitPart
-    local utilities = self.Utilities
-    local cameraCFrame = Camera.CFrame.Position
+function Aimbot:getClosestPlayer()
+    local closest, shortestDistSq = nil, math.huge
+    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    local fovEnabled = self.Settings.FOV.Enabled
+    local fovRadiusSq = fovEnabled and (self.Settings.FOV.Radius ^ 2) or nil
+    local maxDistEnabled = self.Settings.Aimbot.MaxDistance.Enabled
+    local maxDistSq = maxDistEnabled and (self.Settings.Aimbot.MaxDistance.Value ^ 2) or nil
+    local camPos = Camera.CFrame.Position
+    local players = self.Utilities:getPlayers()
 
-    for _, player in ipairs(utilities:getPlayers()) do
+    for _, player in ipairs(players) do 
         if not player:IsDescendantOf(workspace.Ignore.DeadBody) then
-            if not (teamCheck and utilities:isAlly(player)) then
-                local part = utilities:getBodyPart(player, hitPart)
+            local ally = self.Utilities:isAlly(player)
+            if not (self.Settings.Chams.TeamCheck and ally) then
+                local part = self.Utilities:getBodyPart(player, self.Settings.Aimbot.HitPart)
                 if part then
-                    local pos, onScreen = Camera:WorldToViewportPoint(part.Position)
-                    if onScreen then
-                        local distToCenter = (Vector2_new(pos.X, pos.Y) - center).Magnitude
-                        local distToCam = (part.Position - cameraCFrame).Magnitude
-                        if not (maxDistanceEnabled and distToCam > maxDistance) then
-                            if distToCam <= 30 then
-                                return part
-                            end
-                            if (not fovEnabled or distToCenter <= fovRadius) and distToCenter < shortestDist then
-                                closest = part
-                                shortestDist = distToCenter
+                    local partPos = part.Position
+                    local diffToCam = partPos - camPos
+                    local distToCamSq = diffToCam:Dot(diffToCam)
+                    if not maxDistEnabled or distToCamSq <= maxDistSq then
+                        local pos, onScreen = Camera:WorldToViewportPoint(partPos)
+                        if onScreen then
+                            local screenPos = Vector2.new(pos.X, pos.Y)
+                            local deltaToCenter = screenPos - center
+                            local distToCenterSq = deltaToCenter:Dot(deltaToCenter)
+                            local inFOV = not fovEnabled or distToCenterSq <= fovRadiusSq
+                            if inFOV then
+                                if distToCamSq <= 900 then  -- 30^2 = 900
+                                    return part  -- Early return for close targets
+                                end
+                                if distToCenterSq < shortestDistSq then
+                                    closest = part
+                                    shortestDistSq = distToCenterSq
+                                end
                             end
                         end
                     end
@@ -88,46 +84,41 @@ function Aimbot:GetClosestPlayer()
     return closest
 end
 
-function Aimbot:AimAt()
-    local state = self.State
-    local settings = self.Settings
-    if not settings.Aimbot.Easing.Strength or not state.TargetPart or not state.TargetPart:IsDescendantOf(workspace.Players) then
-        return
-    end
-    if state.IsRightClickHeld then
-        if settings.Aimbot.AutoTargetSwitch and not state.TargetPart then
-            state.TargetPart = self:GetClosestPlayer()
-            if not state.TargetPart then
-                state.IsRightClickHeld = false
+function Aimbot:aimAt()
+    if not self.Settings.Aimbot.Easing.Strength or not self.State.TargetPart or not self.State.TargetPart:IsDescendantOf(workspace.Players) then return end
+    if self.State.IsRightClickHeld then
+        if self.Settings.Aimbot.AutoTargetSwitch and not self.State.TargetPart then
+            self.State.TargetPart = self:getClosestPlayer()
+            if not self.State.TargetPart then
+                self.State.IsRightClickHeld = false
                 return
             end
         end
-        local pos, onScreen = Camera:WorldToViewportPoint(state.TargetPart.Position)
+        local pos, onScreen = Camera:WorldToViewportPoint(self.State.TargetPart.Position)
         if onScreen then
-            local delta = Vector2_new(pos.X, pos.Y) - UserInputService:GetMouseLocation()
-            local dist = delta.Magnitude
-            if dist > 1 then
-                local sensitivity = settings.Aimbot.Easing.Sensitivity.Value
-                self:SafeMouseMoveRel(delta.X * sensitivity, delta.Y * sensitivity)
+            local mouse = UserInputService:GetMouseLocation()
+            local delta = Vector2.new(pos.X - mouse.X, pos.Y - mouse.Y)
+            local distSq = delta:Dot(delta)
+            if distSq > 1 then 
+                local sens = self.Settings.Aimbot.Easing.Sensitivity.Value
+                self:safeMouseMoveRel(delta.X * sens, delta.Y * sens)
             end
+        else
+            self.State.TargetPart = nil 
         end
     end
 end
 
-function Aimbot:UpdateSensitivity(val)
-    TweenService:Create(
-        self.Settings.Aimbot.Easing.Sensitivity,
-        TweenInfo.new(0.4, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
-        {Value = val}
-    ):Play()
+function Aimbot:updateSensitivity(val)
+    local tween = TweenService:Create(self.Settings.Aimbot.Easing.Sensitivity, TweenInfo.new(0.4, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {Value = val})
+    tween:Play()
 end
 
 function Aimbot:Cleanup()
-    self:StopMousePreload()
-    local state = self.State
-    if state.InputBeganConnection then state.InputBeganConnection:Disconnect() end
-    if state.InputEndedConnection then state.InputEndedConnection:Disconnect() end
-    if state.RenderSteppedConnection then state.RenderSteppedConnection:Disconnect() end
+    self:stopMousePreload()
+    if self.State.InputBeganConnection then self.State.InputBeganConnection:Disconnect() end
+    if self.State.InputEndedConnection then self.State.InputEndedConnection:Disconnect() end
+    if self.State.RenderSteppedConnection then self.State.RenderSteppedConnection:Disconnect() end
 end
 
 return Aimbot
