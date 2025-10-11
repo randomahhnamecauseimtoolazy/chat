@@ -4363,9 +4363,11 @@ do
     end
 
     SaveManager:BuildFolderTree()
-end
---
 
+    getgenv().SaveManager = SaveManager
+end
+
+--
 -- Renderer
 local Renderer = { DrawList = {} }
 
@@ -4578,7 +4580,3 @@ function Renderer:Text(name, position, text, color, size, font)
 
     return Shape
 end
-
-
-getgenv().SaveManager = SaveManager
-getgenv().ThemeManager = ThemeManager
