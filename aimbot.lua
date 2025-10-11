@@ -41,39 +41,27 @@ function Aimbot:stopMousePreload()
 end
 
 function Aimbot:getClosestPlayer()
-    local closest, shortestDistSq = nil, math.huge
+    local closest, shortestDist = nil, math.huge
     local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-    local fovEnabled = self.Settings.FOV.Enabled
-    local fovRadiusSq = fovEnabled and (self.Settings.FOV.Radius ^ 2) or nil
-    local maxDistEnabled = self.Settings.Aimbot.MaxDistance.Enabled
-    local maxDistSq = maxDistEnabled and (self.Settings.Aimbot.MaxDistance.Value ^ 2) or nil
-    local camPos = Camera.CFrame.Position
-    local players = self.Utilities:getPlayers()
-
-    for _, player in ipairs(players) do 
+    for _, player in pairs(self.Utilities:getPlayers()) do
         if not player:IsDescendantOf(workspace.Ignore.DeadBody) then
             local ally = self.Utilities:isAlly(player)
             if not (self.Settings.Chams.TeamCheck and ally) then
                 local part = self.Utilities:getBodyPart(player, self.Settings.Aimbot.HitPart)
                 if part then
-                    local partPos = part.Position
-                    local diffToCam = partPos - camPos
-                    local distToCamSq = diffToCam:Dot(diffToCam)
-                    if not maxDistEnabled or distToCamSq <= maxDistSq then
-                        local pos, onScreen = Camera:WorldToViewportPoint(partPos)
-                        if onScreen then
-                            local screenPos = Vector2.new(pos.X, pos.Y)
-                            local deltaToCenter = screenPos - center
-                            local distToCenterSq = deltaToCenter:Dot(deltaToCenter)
-                            local inFOV = not fovEnabled or distToCenterSq <= fovRadiusSq
-                            if inFOV then
-                                if distToCamSq <= 900 then  -- 30^2 = 900
-                                    return part  -- Early return for close targets
+                    local pos, onScreen = Camera:WorldToViewportPoint(part.Position)
+                    if onScreen then
+                        local distToCenter = (Vector2.new(pos.X, pos.Y) - center).Magnitude
+                        local distToCam = (part.Position - Camera.CFrame.Position).Magnitude
+                        if not (self.Settings.Aimbot.MaxDistance.Enabled and distToCam > self.Settings.Aimbot.MaxDistance.Value) then
+                            if self.Settings.FOV.Enabled then
+                                if distToCenter <= self.Settings.FOV.Radius then
+                                    if distToCam <= 30 then return part end
+                                    if distToCenter < shortestDist then closest = part shortestDist = distToCenter end
                                 end
-                                if distToCenterSq < shortestDistSq then
-                                    closest = part
-                                    shortestDistSq = distToCenterSq
-                                end
+                            else
+                                if distToCam <= 30 then return part end
+                                if distToCenter < shortestDist then closest = part shortestDist = distToCenter end
                             end
                         end
                     end
@@ -89,22 +77,14 @@ function Aimbot:aimAt()
     if self.State.IsRightClickHeld then
         if self.Settings.Aimbot.AutoTargetSwitch and not self.State.TargetPart then
             self.State.TargetPart = self:getClosestPlayer()
-            if not self.State.TargetPart then
-                self.State.IsRightClickHeld = false
-                return
-            end
+            if not self.State.TargetPart then self.State.IsRightClickHeld = false return end
         end
         local pos, onScreen = Camera:WorldToViewportPoint(self.State.TargetPart.Position)
         if onScreen then
             local mouse = UserInputService:GetMouseLocation()
             local delta = Vector2.new(pos.X - mouse.X, pos.Y - mouse.Y)
-            local distSq = delta:Dot(delta)
-            if distSq > 1 then 
-                local sens = self.Settings.Aimbot.Easing.Sensitivity.Value
-                self:safeMouseMoveRel(delta.X * sens, delta.Y * sens)
-            end
-        else
-            self.State.TargetPart = nil 
+            local dist = delta.Magnitude
+            if dist > 1 then self:safeMouseMoveRel(delta.X * self.Settings.Aimbot.Easing.Sensitivity.Value, delta.Y * self.Settings.Aimbot.Easing.Sensitivity.Value) end
         end
     end
 end
