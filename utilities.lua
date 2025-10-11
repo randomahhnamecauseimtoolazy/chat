@@ -1,5 +1,4 @@
 local Utilities = {}
-local drawhelper = loadstring(game:HttpGet("https://raw.githubusercontent.com/bottomnoah/UI/refs/heads/main/drawing"))()
 local Camera = game:GetService("Workspace").CurrentCamera
 local Players = game:GetService("Players")
 local Teams = game:GetService("Teams")
