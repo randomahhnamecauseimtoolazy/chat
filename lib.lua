@@ -10,6 +10,13 @@ local RenderStepped = RunService.RenderStepped
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
+local Redacted = {
+    Username = OverrideUserSettings and 'admin' or 'user1',
+    Build = OverrideUserSettings and 'developer' or 'live',
+
+    Accent = Color3.fromRGB(140, 130, 255),
+}
+
 local ProtectGui = protectgui or (syn and syn.protect_gui) or function() end
 
 local ScreenGui = Instance.new('ScreenGui')
