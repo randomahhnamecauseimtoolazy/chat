@@ -641,13 +641,13 @@ function UI:setupUI()
             self.Library:Unload()
         end,
     })
-    local menuKeyPicker = MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', {
-        Default = 'RightShift',
-        NoUI = true,
-        Text = 'Menu keybind',
-    })
+    MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', {
+    Default = 'RightShift',
+    NoUI = true,
+    Text = 'Menu keybind',
+})
 
-    self.Library.ToggleKeybind = menuKeyPicker
+Library.ToggleKeybind = Options.MenuKeybind
 
     -- Addons
     SaveManager:SetLibrary(self.Library)
