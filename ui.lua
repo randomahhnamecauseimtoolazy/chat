@@ -1,10 +1,9 @@
 local UI = {}
 
-function UI:Init(Settings, State, Library, SaveManager, hasMouseMoveRel, Aimbot, ESP, FOV, Chams, Crosshair, PlayerMod, Misc, Utilities)
+function UI:Init(Settings, State, Library, hasMouseMoveRel, Aimbot, ESP, FOV, Chams, Crosshair, PlayerMod, Misc, Utilities, SaveManager)
     self.Settings = Settings
     self.State = State
     self.Library = Library
-    self.SaveManager = SaveManager
     self.hasMouseMoveRel = hasMouseMoveRel
     self.Aimbot = Aimbot
     self.ESP = ESP
@@ -14,6 +13,7 @@ function UI:Init(Settings, State, Library, SaveManager, hasMouseMoveRel, Aimbot,
     self.PlayerMod = PlayerMod
     self.Misc = Misc
     self.Utilities = Utilities
+    self.SaveManager = SaveManager
     self:setupUI()
 end
 
