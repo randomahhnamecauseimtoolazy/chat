@@ -17,516 +17,833 @@ function UI:Init(Settings, State, Library, hasMouseMoveRel, Aimbot, ESP, FOV, Ch
 end
 
 function UI:setupUI()
-    local Window = self.Library:CreateWindow({ Name = "Nullwave", Themeable = { Info = "dsc.gg/kaotiksoftworks" } })
-    local Tabs = {
-        Main = Window:CreateTab({Name = "Main"}),
-        Visuals = Window:CreateTab({Name = "Visuals"}),
-        Player = Window:CreateTab({Name = "Player"}),
-        Misc = Window:CreateTab({Name = "Misc"})
-    }
+    local Window = Library:CreateWindow({
+    Title = 'Nullwave',
+    Center = true,
+    AutoShow = true,
+    TabPadding = 8,
+    MenuFadeTime = 0.2,
+})
 
-    -- Crosshair UI
-    local CrosshairGroup = Tabs.Misc:CreateSection({Name = "Crosshair"})
-    CrosshairGroup:AddToggle({
-        Name = "Enabled",
-        Flag = "CrosshairEnabled",
-        Value = self.Settings.Crosshair.Enabled,
-        Callback = function(s)
-            self.Settings.Crosshair.Enabled = s
-            self.Crosshair:toggleCrosshair(s)
-        end
-    })
-    CrosshairGroup:AddDropdown({
-        Name = "Style",
-        Flag = "CrosshairStyle",
-        List = {"Default", "Plus"},
-        Value = self.Settings.Crosshair.TStyle,
-        Callback = function(v) self.Settings.Crosshair.TStyle = v end
-    })
-    CrosshairGroup:AddToggle({
-        Name = "Center Dot",
-        Flag = "CrosshairDot",
-        Value = self.Settings.Crosshair.Dot,
-        Callback = function(s) self.Settings.Crosshair.Dot = s end
-    })
-    CrosshairGroup:AddSlider({
-        Name = "Size",
-        Flag = "CrosshairSize",
-        Value = self.Settings.Crosshair.Size,
-        Min = 1,
-        Max = 30,
-        Rounding = 0,
-        Callback = function(v) self.Settings.Crosshair.Size = v end
-    })
-    CrosshairGroup:AddSlider({
-        Name = "Thickness",
-        Flag = "CrosshairThickness",
-        Value = self.Settings.Crosshair.Thickness,
-        Min = 1,
-        Max = 5,
-        Rounding = 0,
-        Callback = function(v) self.Settings.Crosshair.Thickness = v end
-    })
-    CrosshairGroup:AddSlider({
-        Name = "Gap",
-        Flag = "CrosshairGap",
-        Value = self.Settings.Crosshair.Gap,
-        Min = 0,
-        Max = 20,
-        Rounding = 0,
-        Callback = function(v) self.Settings.Crosshair.Gap = v end
-    })
-    CrosshairGroup:AddColorPicker({
-        Name = "Color",
-        Flag = "CrosshairColor",
-        Color = self.Settings.Crosshair.Color,
-        Transparency = 0,
-        Callback = function(v) self.Settings.Crosshair.Color = v end
-    })
-    CrosshairGroup:AddSlider({
-        Name = "Transparency",
-        Flag = "CrosshairTransparency",
-        Value = self.Settings.Crosshair.Transparency,
-        Min = 0,
-        Max = 1,
-        Rounding = 2,
-        Callback = function(v) self.Settings.Crosshair.Transparency = v end
-    })
+local Tabs = {
+    Main = Window:AddTab('Main'),
+    Visuals = Window:AddTab('Visuals'),
+    Player = Window:AddTab('Player'),
+    Misc = Window:AddTab('Misc'),
+    UISettings = Window:AddTab('UI Settings'),
+}
 
-    -- Aimbot UI
-    if self.hasMouseMoveRel then
-        local AimbotGroup = Tabs.Main:CreateSection({Name = "Aimbot"})
-        AimbotGroup:AddToggle({
-            Name = "Enabled",
-            Flag = "AimbotEnabled",
-            Value = self.Settings.Aimbot.Enabled,
-            Callback = function(s)
-                self.Settings.Aimbot.Enabled = s
-                if s then
-                    self.Aimbot:startMousePreload()
-                    self.State.InputBeganConnection = game:GetService("UserInputService").InputBegan:Connect(function(i)
-                        if i.UserInputType == Enum.UserInputType.MouseButton2 then
-                            self.State.IsRightClickHeld = true
-                            self.State.TargetPart = self.Aimbot:getClosestPlayer()
+-- Crosshair UI
+local CrosshairGroup = Tabs.Misc:AddLeftGroupbox('Crosshair')
+CrosshairGroup:AddToggle('CrosshairEnabled', {
+    Text = 'Enabled',
+    Default = Settings.Crosshair.Enabled,
+    Callback = function(value)
+        Settings.Crosshair.Enabled = value
+        toggleCrosshair(value)
+    end,
+})
+Toggles.CrosshairEnabled:OnChanged(function()
+    Settings.Crosshair.Enabled = Toggles.CrosshairEnabled.Value
+    toggleCrosshair(Toggles.CrosshairEnabled.Value)
+end)
+
+CrosshairGroup:AddDropdown('CrosshairStyle', {
+    Text = 'Style',
+    Values = { 'Default', 'Plus' },
+    Default = 1,
+    Callback = function(value)
+        Settings.Crosshair.TStyle = value
+    end,
+})
+Options.CrosshairStyle:OnChanged(function()
+    Settings.Crosshair.TStyle = Options.CrosshairStyle.Value
+end)
+
+CrosshairGroup:AddToggle('CrosshairDot', {
+    Text = 'Center Dot',
+    Default = Settings.Crosshair.Dot,
+    Callback = function(value)
+        Settings.Crosshair.Dot = value
+    end,
+})
+Toggles.CrosshairDot:OnChanged(function()
+    Settings.Crosshair.Dot = Toggles.CrosshairDot.Value
+end)
+
+CrosshairGroup:AddSlider('CrosshairSize', {
+    Text = 'Size',
+    Default = Settings.Crosshair.Size,
+    Min = 1,
+    Max = 30,
+    Rounding = 0,
+    Callback = function(value)
+        Settings.Crosshair.Size = value
+    end,
+})
+Options.CrosshairSize:OnChanged(function()
+    Settings.Crosshair.Size = Options.CrosshairSize.Value
+end)
+
+CrosshairGroup:AddSlider('CrosshairThickness', {
+    Text = 'Thickness',
+    Default = Settings.Crosshair.Thickness,
+    Min = 1,
+    Max = 5,
+    Rounding = 0,
+    Callback = function(value)
+        Settings.Crosshair.Thickness = value
+    end,
+})
+Options.CrosshairThickness:OnChanged(function()
+    Settings.Crosshair.Thickness = Options.CrosshairThickness.Value
+end)
+
+CrosshairGroup:AddSlider('CrosshairGap', {
+    Text = 'Gap',
+    Default = Settings.Crosshair.Gap,
+    Min = 0,
+    Max = 20,
+    Rounding = 0,
+    Callback = function(value)
+        Settings.Crosshair.Gap = value
+    end,
+})
+Options.CrosshairGap:OnChanged(function()
+    Settings.Crosshair.Gap = Options.CrosshairGap.Value
+end)
+
+CrosshairGroup:AddLabel('Color'):AddColorPicker('CrosshairColor', {
+    Default = Settings.Crosshair.Color,
+    Transparency = 0,
+    Callback = function(value)
+        Settings.Crosshair.Color = value
+    end,
+})
+Options.CrosshairColor:OnChanged(function()
+    Settings.Crosshair.Color = Options.CrosshairColor.Value
+end)
+
+CrosshairGroup:AddSlider('CrosshairTransparency', {
+    Text = 'Transparency',
+    Default = Settings.Crosshair.Transparency,
+    Min = 0,
+    Max = 1,
+    Rounding = 2,
+    Callback = function(value)
+        Settings.Crosshair.Transparency = value
+    end,
+})
+Options.CrosshairTransparency:OnChanged(function()
+    Settings.Crosshair.Transparency = Options.CrosshairTransparency.Value
+end)
+
+-- Aimbot UI
+if hasMouseMoveRel then
+    local AimbotGroup = Tabs.Main:AddLeftGroupbox('Aimbot')
+    AimbotGroup:AddToggle('AimbotEnabled', {
+        Text = 'Enabled',
+        Default = Settings.Aimbot.Enabled,
+        Callback = function(value)
+            Settings.Aimbot.Enabled = value
+            if value then
+                startMousePreload()
+                State.InputBeganConnection = UserInputService.InputBegan:Connect(
+                    function(i)
+                        if
+                            i.UserInputType == Enum.UserInputType.MouseButton2
+                        then
+                            State.IsRightClickHeld = true
+                            State.TargetPart = getClosestPlayer()
                         end
-                    end)
-                    self.State.InputEndedConnection = game:GetService("UserInputService").InputEnded:Connect(function(i)
-                        if i.UserInputType == Enum.UserInputType.MouseButton2 then
-                            self.State.IsRightClickHeld = false
-                            self.State.TargetPart = nil
+                    end
+                )
+                State.InputEndedConnection = UserInputService.InputEnded:Connect(
+                    function(i)
+                        if
+                            i.UserInputType == Enum.UserInputType.MouseButton2
+                        then
+                            State.IsRightClickHeld = false
+                            State.TargetPart = nil
                         end
-                    end)
-                    self.State.RenderSteppedConnection = game:GetService("RunService").RenderStepped:Connect(function()
-                        if self.State.IsRightClickHeld and self.State.TargetPart then
-                            if self.Settings.Aimbot.WallCheck then
-                                if self.Utilities:isVisible(self.State.TargetPart, true) then
-                                    self.Aimbot:aimAt()
+                    end
+                )
+                State.RenderSteppedConnection = RunService.RenderStepped:Connect(
+                    function()
+                        if State.IsRightClickHeld and State.TargetPart then
+                            if Settings.Aimbot.WallCheck then
+                                if isVisible(State.TargetPart, true) then
+                                    aimAt()
                                 end
                             else
-                                self.Aimbot:aimAt()
+                                aimAt()
                             end
                         end
-                    end)
-                else
-                    self.Aimbot:stopMousePreload()
-                    if self.State.InputBeganConnection then self.State.InputBeganConnection:Disconnect() end
-                    if self.State.InputEndedConnection then self.State.InputEndedConnection:Disconnect() end
-                    if self.State.RenderSteppedConnection then self.State.RenderSteppedConnection:Disconnect() end
-                end
-            end
-        })
-        AimbotGroup:AddDropdown({
-            Name = "Hit Part",
-            Flag = "AimbotHitPart",
-            List = {"Head", "Torso"},
-            Value = self.Settings.Aimbot.HitPart,
-            Callback = function(v) self.Settings.Aimbot.HitPart = v end
-        })
-        AimbotGroup:AddToggle({
-            Name = "Wall Check",
-            Flag = "AimbotWallCheck",
-            Value = self.Settings.Aimbot.WallCheck,
-            Callback = function(s) self.Settings.Aimbot.WallCheck = s end
-        })
-        AimbotGroup:AddToggle({
-            Name = "Auto Target Switch",
-            Flag = "AimbotAutoTargetSwitch",
-            Value = self.Settings.Aimbot.AutoTargetSwitch,
-            Callback = function(s) self.Settings.Aimbot.AutoTargetSwitch = s end
-        })
-        AimbotGroup:AddToggle({
-            Name = "Use Max Distance",
-            Flag = "AimbotMaxDistanceEnabled",
-            Value = self.Settings.Aimbot.MaxDistance.Enabled,
-            Callback = function(s) self.Settings.Aimbot.MaxDistance.Enabled = s end
-        })
-        AimbotGroup:AddSlider({
-            Name = "Max Distance",
-            Flag = "AimbotMaxDistance",
-            Value = self.Settings.Aimbot.MaxDistance.Value,
-            Min = 10,
-            Max = 1000,
-            Rounding = 0,
-            Callback = function(v) self.Settings.Aimbot.MaxDistance.Value = v end
-        })
-        AimbotGroup:AddSlider({
-            Name = "Strength",
-            Flag = "AimbotEasingStrength",
-            Value = self.Settings.Aimbot.Easing.Strength,
-            Min = 0.1,
-            Max = 1.5,
-            Decimals = 1,
-            Rounding = 1,
-            Callback = function(v)
-                self.Settings.Aimbot.Easing.Strength = v
-                if self.Aimbot then
-                    self.Aimbot:updateSensitivity(v)
-                end
-            end
-        })
-    end
-
-    -- ESP UI
-    local ESPGroup = Tabs.Visuals:CreateSection({Name = "ESP"})
-    ESPGroup:AddToggle({
-        Name = "Enabled",
-        Flag = "ESPEnabled",
-        Value = self.Settings.ESP.Enabled,
-        Callback = function(s)
-            self.Settings.ESP.Enabled = s
-            if s then
-                self.ESP:initializeESP()
-                self.State.PlayerCacheUpdate = game:GetService("RunService").Heartbeat:Connect(function() self.ESP:updatePlayerCache() end)
-                local last = tick()
-                local interval = 1 / 240
-                self.State.ESPLoop = game:GetService("RunService").Heartbeat:Connect(function()
-                    local now = tick()
-                    if now - last >= interval then
-                        self.ESP:renderESP()
-                        last = now
                     end
-                end)
+                )
             else
-                if self.State.PlayerCacheUpdate then self.State.PlayerCacheUpdate:Disconnect() end
-                if self.State.ESPLoop then self.State.ESPLoop:Disconnect() end
-                for p in pairs(self.State.Storage.ESPCache) do self.Utilities:uncacheObject(p) end
-                self.State.PlayersToDraw = {}
-                self.State.CachedProperties = {}
-            end
-        end
-    })
-    local function updateESPFeature(f, s)
-        self.Settings.ESP.Features[f].Enabled = s
-        for _, c in pairs(self.State.Storage.ESPCache) do
-            if f == "Box" then
-                c.BoxSquare.Visible = s
-                c.BoxOutline.Visible = s
-            elseif f == "Tracer" then
-                c.TracerLine.Visible = s
-            elseif f == "HeadDot" then
-                c.HeadDot.Visible = s
-            elseif f == "DistanceText" then
-                c.DistanceLabel.Visible = s
-            elseif f == "Name" then
-                c.NameLabel.Visible = s
-            end
-        end
-    end
-    ESPGroup:AddToggle({
-        Name = "Box",
-        Flag = "ESPBox",
-        Value = self.Settings.ESP.Features.Box.Enabled,
-        Callback = function(s) updateESPFeature("Box", s) end
-    })
-    ESPGroup:AddToggle({
-        Name = "Tracer",
-        Flag = "ESPTracer",
-        Value = self.Settings.ESP.Features.Tracer.Enabled,
-        Callback = function(s) updateESPFeature("Tracer", s) end
-    })
-    ESPGroup:AddToggle({
-        Name = "Head Dot",
-        Flag = "ESPHeadDot",
-        Value = self.Settings.ESP.Features.HeadDot.Enabled,
-        Callback = function(s) updateESPFeature("HeadDot", s) end
-    })
-    ESPGroup:AddToggle({
-        Name = "Distance",
-        Flag = "ESPDistance",
-        Value = self.Settings.ESP.Features.DistanceText.Enabled,
-        Callback = function(s) updateESPFeature("DistanceText", s) end
-    })
-    ESPGroup:AddToggle({
-        Name = "Name",
-        Flag = "ESPName",
-        Value = self.Settings.ESP.Features.Name.Enabled,
-        Callback = function(s) updateESPFeature("Name", s) end
-    })
-    ESPGroup:AddToggle({
-        Name = "Wall Check",
-        Flag = "ESPVisibilityCheck",
-        Value = self.Settings.ESP.VisibilityCheck,
-        Callback = function(s) self.Settings.ESP.VisibilityCheck = s end
-    })
-
-    -- ESP Colors
-    local ESPCustomization = Tabs.Visuals:CreateSection({Name = "ESP Colors", Side = "Right"})
-    local function updateESPColor(f, c)
-        self.Settings.ESP.Features[f].Color = c
-        for _, cache in pairs(self.State.Storage.ESPCache) do
-            if f == "Box" then
-                cache.BoxSquare.Color = c
-            elseif f == "Tracer" then
-                cache.TracerLine.Color = c
-            elseif f == "HeadDot" then
-                cache.HeadDot.Color = c
-            elseif f == "DistanceText" then
-                cache.DistanceLabel.Color = c
-            elseif f == "Name" then
-                cache.NameLabel.Color = c
-            end
-        end
-    end
-    ESPCustomization:AddColorPicker({
-        Name = "Box Color",
-        Flag = "ESPBoxColor",
-        Color = self.Settings.ESP.Features.Box.Color,
-        Callback = function(v) updateESPColor("Box", v) end
-    })
-    ESPCustomization:AddColorPicker({
-        Name = "Tracer Color",
-        Flag = "ESPTracerColor",
-        Color = self.Settings.ESP.Features.Tracer.Color,
-        Callback = function(v) updateESPColor("Tracer", v) end
-    })
-    ESPCustomization:AddColorPicker({
-        Name = "Distance Color",
-        Flag = "ESPDistanceColor",
-        Color = self.Settings.ESP.Features.DistanceText.Color,
-        Callback = function(v) updateESPColor("DistanceText", v) end
-    })
-    ESPCustomization:AddColorPicker({
-        Name = "Head Dot Color",
-        Flag = "ESPHeadDotColor",
-        Color = self.Settings.ESP.Features.HeadDot.Color,
-        Callback = function(v) updateESPColor("HeadDot", v) end
-    })
-    ESPCustomization:AddColorPicker({
-        Name = "Name Color",
-        Flag = "ESPNameColor",
-        Color = self.Settings.ESP.Features.Name.Color,
-        Callback = function(v) updateESPColor("Name", v) end
-    })
-
-    -- Distance Settings
-    local DistanceCustomization = Tabs.Visuals:CreateSection({Name = "Distance Settings", Side = "Right"})
-    DistanceCustomization:AddToggle({
-        Name = "Use Max Distance",
-        Flag = "ESPMaxDistanceEnabled",
-        Value = self.Settings.ESP.MaxDistance.Enabled,
-        Callback = function(s)
-            self.Settings.ESP.MaxDistance.Enabled = s
-            if self.Settings.ESP.Enabled then self.ESP:updatePlayerCache() end
-        end
-    })
-    DistanceCustomization:AddSlider({
-        Name = "Max Distance",
-        Flag = "ESPMaxDistance",
-        Value = self.Settings.ESP.MaxDistance.Value,
-        Min = 50,
-        Max = 1000,
-        Rounding = 0,
-        Callback = function(v)
-            self.Settings.ESP.MaxDistance.Value = v
-            if self.Settings.ESP.Enabled then self.ESP:updatePlayerCache() end
-        end
-    })
-
-    -- FOV UI
-    local FOVGroup = Tabs.Main:CreateSection({Name = "FOV", Side = "Right"})
-    FOVGroup:AddToggle({
-        Name = "Show FOV Circle",
-        Flag = "FOVEnabled",
-        Value = self.Settings.FOV.Enabled,
-        Callback = function(s)
-            self.Settings.FOV.Enabled = s
-            self.Settings.FOV.Circle.Visible = s
-            self.Settings.FOV.OutlineCircle.Visible = s
-        end
-    })
-    FOVGroup:AddToggle({
-        Name = "Follow Gun",
-        Flag = "FOVFollowGun",
-        Value = self.Settings.FOV.FollowGun,
-        Callback = function(s) self.Settings.FOV.FollowGun = s end
-    })
-    FOVGroup:AddToggle({
-        Name = "Fill FOV Circle",
-        Flag = "FOVFilled",
-        Value = self.Settings.FOV.Filled,
-        Callback = function(s)
-            self.Settings.FOV.Filled = s
-            self.Settings.FOV.Circle.Filled = s
-            self.Settings.FOV.Circle.Color = s and self.Settings.FOV.FillColor or self.Settings.FOV.OutlineColor
-            self.Settings.FOV.Circle.Transparency = s and self.Settings.FOV.FillTransparency or self.Settings.FOV.OutlineTransparency
-            self.Settings.FOV.Circle.Thickness = s and 0 or 1
-        end
-    })
-    FOVGroup:AddColorPicker({
-        Name = "Inline Color",
-        Flag = "FOVFillColor",
-        Color = self.Settings.FOV.FillColor,
-        Transparency = self.Settings.FOV.FillTransparency,
-        Callback = function(v)
-            self.Settings.FOV.FillColor = v
-            if self.Settings.FOV.Filled then self.Settings.FOV.Circle.Color = v end
-        end
-    })
-    FOVGroup:AddSlider({
-        Name = "Inline Transparency",
-        Flag = "FOVFillTransparency",
-        Value = self.Settings.FOV.FillTransparency,
-        Min = 0,
-        Max = 1,
-        Rounding = 2,
-        Callback = function(v)
-            self.Settings.FOV.FillTransparency = v
-            if self.Settings.FOV.Filled then self.Settings.FOV.Circle.Transparency = v end
-        end
-    })
-    FOVGroup:AddColorPicker({
-        Name = "Outline Color",
-        Flag = "FOVOutlineColor",
-        Color = self.Settings.FOV.OutlineColor,
-        Transparency = self.Settings.FOV.OutlineTransparency,
-        Callback = function(v)
-            self.Settings.FOV.OutlineColor = v
-            self.Settings.FOV.OutlineCircle.Color = v
-            if not self.Settings.FOV.Filled then self.Settings.FOV.Circle.Color = v end
-        end
-    })
-    FOVGroup:AddSlider({
-        Name = "Outline Transparency",
-        Flag = "FOVOutlineTransparency",
-        Value = self.Settings.FOV.OutlineTransparency,
-        Min = 0,
-        Max = 1,
-        Rounding = 2,
-        Callback = function(v)
-            self.Settings.FOV.OutlineTransparency = v
-            self.Settings.FOV.OutlineCircle.Transparency = v
-            if not self.Settings.FOV.Filled then self.Settings.FOV.Circle.Transparency = v end
-        end
-    })
-    FOVGroup:AddSlider({
-        Name = "FOV Radius",
-        Flag = "FOVRadius",
-        Value = self.Settings.FOV.Radius,
-        Min = 50,
-        Max = 1000,
-        Rounding = 0,
-        Callback = function(v)
-            self.Settings.FOV.Radius = v
-            self.Settings.FOV.Circle.Radius = v
-            self.Settings.FOV.OutlineCircle.Radius = v
-        end
-    })
-
-    -- Chams UI
-    local ChamsGroup = Tabs.Visuals:CreateSection({Name = "Chams"})
-    ChamsGroup:AddToggle({
-        Name = "Enabled",
-        Flag = "ChamsEnabled",
-        Value = self.Settings.Chams.Enabled,
-        Callback = function(s)
-            self.Settings.Chams.Enabled = s
-            if s then
-                self.State.ChamsUpdateConnection = game:GetService("RunService").RenderStepped:Connect(function() self.Chams:updateChams() end)
-            else
-                if self.State.ChamsUpdateConnection then
-                    self.State.ChamsUpdateConnection:Disconnect()
-                    self.State.ChamsUpdateConnection = nil
+                stopMousePreload()
+                if State.InputBeganConnection then
+                    State.InputBeganConnection:Disconnect()
                 end
-                for p in pairs(self.State.Highlights) do self.Chams:removeHighlight(p) end
+                if State.InputEndedConnection then
+                    State.InputEndedConnection:Disconnect()
+                end
+                if State.RenderSteppedConnection then
+                    State.RenderSteppedConnection:Disconnect()
+                end
+            end
+        end,
+    })
+    Toggles.AimbotEnabled:OnChanged(function()
+        Settings.Aimbot.Enabled = Toggles.AimbotEnabled.Value
+    end)
+
+    AimbotGroup:AddDropdown('AimbotHitPart', {
+        Text = 'Hit Part',
+        Values = { 'Head', 'Torso' },
+        Default = 1,
+        Callback = function(value)
+            Settings.Aimbot.HitPart = value
+        end,
+    })
+    Options.AimbotHitPart:OnChanged(function()
+        Settings.Aimbot.HitPart = Options.AimbotHitPart.Value
+    end)
+
+    AimbotGroup:AddToggle('AimbotWallCheck', {
+        Text = 'Wall Check',
+        Default = Settings.Aimbot.WallCheck,
+        Callback = function(value)
+            Settings.Aimbot.WallCheck = value
+        end,
+    })
+    Toggles.AimbotWallCheck:OnChanged(function()
+        Settings.Aimbot.WallCheck = Toggles.AimbotWallCheck.Value
+    end)
+
+    AimbotGroup:AddToggle('AimbotAutoTargetSwitch', {
+        Text = 'Auto Target Switch',
+        Default = Settings.Aimbot.AutoTargetSwitch,
+        Callback = function(value)
+            Settings.Aimbot.AutoTargetSwitch = value
+        end,
+    })
+    Toggles.AimbotAutoTargetSwitch:OnChanged(function()
+        Settings.Aimbot.AutoTargetSwitch = Toggles.AimbotAutoTargetSwitch.Value
+    end)
+
+    AimbotGroup:AddToggle('AimbotMaxDistanceEnabled', {
+        Text = 'Use Max Distance',
+        Default = Settings.Aimbot.MaxDistance.Enabled,
+        Callback = function(value)
+            Settings.Aimbot.MaxDistance.Enabled = value
+        end,
+    })
+    Toggles.AimbotMaxDistanceEnabled:OnChanged(function()
+        Settings.Aimbot.MaxDistance.Enabled =
+            Toggles.AimbotMaxDistanceEnabled.Value
+    end)
+
+    AimbotGroup:AddSlider('AimbotMaxDistance', {
+        Text = 'Max Distance',
+        Default = Settings.Aimbot.MaxDistance.Value,
+        Min = 10,
+        Max = 1000,
+        Rounding = 0,
+        Callback = function(value)
+            Settings.Aimbot.MaxDistance.Value = value
+        end,
+    })
+    Options.AimbotMaxDistance:OnChanged(function()
+        Settings.Aimbot.MaxDistance.Value = Options.AimbotMaxDistance.Value
+    end)
+
+    AimbotGroup:AddSlider('AimbotEasingStrength', {
+        Text = 'Strength',
+        Default = Settings.Aimbot.Easing.Strength,
+        Min = 0.1,
+        Max = 1.5,
+        Rounding = 1,
+        Callback = function(value)
+            Settings.Aimbot.Easing.Strength = value
+            updateSensitivity(value)
+        end,
+    })
+    Options.AimbotEasingStrength:OnChanged(function()
+        Settings.Aimbot.Easing.Strength = Options.AimbotEasingStrength.Value
+        updateSensitivity(Options.AimbotEasingStrength.Value)
+    end)
+end
+
+-- ESP UI
+local ESPGroup = Tabs.Visuals:AddLeftGroupbox('ESP')
+ESPGroup:AddToggle('ESPEnabled', {
+    Text = 'Enabled',
+    Default = Settings.ESP.Enabled,
+    Callback = function(value)
+        Settings.ESP.Enabled = value
+        if value then
+            initializeESP()
+            State.PlayerCacheUpdate =
+                RunService.Heartbeat:Connect(updatePlayerCache)
+            local last = tick()
+            local interval = 1 / 240
+            State.ESPLoop = RunService.Heartbeat:Connect(function()
+                local now = tick()
+                if now - last >= interval then
+                    renderESP()
+                    last = now
+                end
+            end)
+        else
+            if State.PlayerCacheUpdate then
+                State.PlayerCacheUpdate:Disconnect()
+            end
+            if State.ESPLoop then
+                State.ESPLoop:Disconnect()
+            end
+            for p in pairs(State.Storage.ESPCache) do
+                uncacheObject(p)
+            end
+            State.PlayersToDraw = {}
+            State.CachedProperties = {}
+        end
+    end,
+})
+Toggles.ESPEnabled:OnChanged(function()
+    Settings.ESP.Enabled = Toggles.ESPEnabled.Value
+end)
+
+local function updateESPFeature(f, s)
+    Settings.ESP.Features[f].Enabled = s
+    for _, c in pairs(State.Storage.ESPCache) do
+        if f == 'Box' then
+            c.BoxSquare.Visible = s
+            c.BoxOutline.Visible = s
+        elseif f == 'Tracer' then
+            c.TracerLine.Visible = s
+        elseif f == 'HeadDot' then
+            c.HeadDot.Visible = s
+        elseif f == 'DistanceText' then
+            c.DistanceLabel.Visible = s
+        elseif f == 'Name' then
+            c.NameLabel.Visible = s
+        end
+    end
+end
+
+ESPGroup:AddToggle('ESPBox', {
+    Text = 'Box',
+    Default = Settings.ESP.Features.Box.Enabled,
+    Callback = function(value)
+        updateESPFeature('Box', value)
+    end,
+})
+Toggles.ESPBox:OnChanged(function()
+    updateESPFeature('Box', Toggles.ESPBox.Value)
+end)
+
+ESPGroup:AddToggle('ESPTracer', {
+    Text = 'Tracer',
+    Default = Settings.ESP.Features.Tracer.Enabled,
+    Callback = function(value)
+        updateESPFeature('Tracer', value)
+    end,
+})
+Toggles.ESPTracer:OnChanged(function()
+    updateESPFeature('Tracer', Toggles.ESPTracer.Value)
+end)
+
+ESPGroup:AddToggle('ESPHeadDot', {
+    Text = 'Head Dot',
+    Default = Settings.ESP.Features.HeadDot.Enabled,
+    Callback = function(value)
+        updateESPFeature('HeadDot', value)
+    end,
+})
+Toggles.ESPHeadDot:OnChanged(function()
+    updateESPFeature('HeadDot', Toggles.ESPHeadDot.Value)
+end)
+
+ESPGroup:AddToggle('ESPDistance', {
+    Text = 'Distance',
+    Default = Settings.ESP.Features.DistanceText.Enabled,
+    Callback = function(value)
+        updateESPFeature('DistanceText', value)
+    end,
+})
+Toggles.ESPDistance:OnChanged(function()
+    updateESPFeature('DistanceText', Toggles.ESPDistance.Value)
+end)
+
+ESPGroup:AddToggle('ESPName', {
+    Text = 'Name',
+    Default = Settings.ESP.Features.Name.Enabled,
+    Callback = function(value)
+        updateESPFeature('Name', value)
+    end,
+})
+Toggles.ESPName:OnChanged(function()
+    updateESPFeature('Name', Toggles.ESPName.Value)
+end)
+
+ESPGroup:AddToggle('ESPVisibilityCheck', {
+    Text = 'Wall Check',
+    Default = Settings.ESP.VisibilityCheck,
+    Callback = function(value)
+        Settings.ESP.VisibilityCheck = value
+    end,
+})
+Toggles.ESPVisibilityCheck:OnChanged(function()
+    Settings.ESP.VisibilityCheck = Toggles.ESPVisibilityCheck.Value
+end)
+
+-- ESP Colors
+local ESPCustomization = Tabs.Visuals:AddRightGroupbox('ESP Colors')
+local function updateESPColor(f, c)
+    Settings.ESP.Features[f].Color = c
+    for _, cache in pairs(State.Storage.ESPCache) do
+        if f == 'Box' then
+            cache.BoxSquare.Color = c
+        elseif f == 'Tracer' then
+            cache.TracerLine.Color = c
+        elseif f == 'HeadDot' then
+            cache.HeadDot.Color = c
+        elseif f == 'DistanceText' then
+            cache.DistanceLabel.Color = c
+        elseif f == 'Name' then
+            cache.NameLabel.Color = c
+        end
+    end
+end
+
+ESPCustomization:AddLabel('Box Color'):AddColorPicker('ESPBoxColor', {
+    Default = Settings.ESP.Features.Box.Color,
+    Callback = function(value)
+        updateESPColor('Box', value)
+    end,
+})
+Options.ESPBoxColor:OnChanged(function()
+    updateESPColor('Box', Options.ESPBoxColor.Value)
+end)
+
+ESPCustomization:AddLabel('Tracer Color'):AddColorPicker('ESPTracerColor', {
+    Default = Settings.ESP.Features.Tracer.Color,
+    Callback = function(value)
+        updateESPColor('Tracer', value)
+    end,
+})
+Options.ESPTracerColor:OnChanged(function()
+    updateESPColor('Tracer', Options.ESPTracerColor.Value)
+end)
+
+ESPCustomization:AddLabel('Distance Color'):AddColorPicker('ESPDistanceColor', {
+    Default = Settings.ESP.Features.DistanceText.Color,
+    Callback = function(value)
+        updateESPColor('DistanceText', value)
+    end,
+})
+Options.ESPDistanceColor:OnChanged(function()
+    updateESPColor('DistanceText', Options.ESPDistanceColor.Value)
+end)
+
+ESPCustomization:AddLabel('Head Dot Color'):AddColorPicker('ESPHeadDotColor', {
+    Default = Settings.ESP.Features.HeadDot.Color,
+    Callback = function(value)
+        updateESPColor('HeadDot', value)
+    end,
+})
+Options.ESPHeadDotColor:OnChanged(function()
+    updateESPColor('HeadDot', Options.ESPHeadDotColor.Value)
+end)
+
+ESPCustomization:AddLabel('Name Color'):AddColorPicker('ESPNameColor', {
+    Default = Settings.ESP.Features.Name.Color,
+    Callback = function(value)
+        updateESPColor('Name', value)
+    end,
+})
+Options.ESPNameColor:OnChanged(function()
+    updateESPColor('Name', Options.ESPNameColor.Value)
+end)
+
+-- Distance Settings
+local DistanceCustomization = Tabs.Visuals:AddRightGroupbox('Distance Settings')
+DistanceCustomization:AddToggle('ESPMaxDistanceEnabled', {
+    Text = 'Use Max Distance',
+    Default = Settings.ESP.MaxDistance.Enabled,
+    Callback = function(value)
+        Settings.ESP.MaxDistance.Enabled = value
+        refreshPlayerCache()
+    end,
+})
+Toggles.ESPMaxDistanceEnabled:OnChanged(function()
+    Settings.ESP.MaxDistance.Enabled = Toggles.ESPMaxDistanceEnabled.Value
+    refreshPlayerCache()
+end)
+
+DistanceCustomization:AddSlider('ESPMaxDistance', {
+    Text = 'Max Distance',
+    Default = Settings.ESP.MaxDistance.Value,
+    Min = 50,
+    Max = 1000,
+    Rounding = 0,
+    Callback = function(value)
+        Settings.ESP.MaxDistance.Value = value
+        refreshPlayerCache()
+    end,
+})
+Options.ESPMaxDistance:OnChanged(function()
+    Settings.ESP.MaxDistance.Value = Options.ESPMaxDistance.Value
+    refreshPlayerCache()
+end)
+
+-- FOV UI
+local FOVGroup = Tabs.Main:AddRightGroupbox('FOV')
+FOVGroup:AddToggle('FOVEnabled', {
+    Text = 'Show FOV Circle',
+    Default = Settings.FOV.Enabled,
+    Callback = function(value)
+        Settings.FOV.Enabled = value
+        Settings.FOV.Circle.Visible = value
+        Settings.FOV.OutlineCircle.Visible = value
+    end,
+})
+Toggles.FOVEnabled:OnChanged(function()
+    Settings.FOV.Enabled = Toggles.FOVEnabled.Value
+    Settings.FOV.Circle.Visible = Toggles.FOVEnabled.Value
+    Settings.FOV.OutlineCircle.Visible = Toggles.FOVEnabled.Value
+end)
+
+FOVGroup:AddToggle('FOVFollowGun', {
+    Text = 'Follow Gun',
+    Default = Settings.FOV.FollowGun,
+    Callback = function(value)
+        Settings.FOV.FollowGun = value
+    end,
+})
+Toggles.FOVFollowGun:OnChanged(function()
+    Settings.FOV.FollowGun = Toggles.FOVFollowGun.Value
+end)
+
+FOVGroup:AddToggle('FOVFilled', {
+    Text = 'Fill FOV Circle',
+    Default = Settings.FOV.Filled,
+    Callback = function(value)
+        Settings.FOV.Filled = value
+        Settings.FOV.Circle.Filled = value
+        Settings.FOV.Circle.Color = value and Settings.FOV.FillColor
+            or Settings.FOV.OutlineColor
+        Settings.FOV.Circle.Transparency = value
+                and Settings.FOV.FillTransparency
+            or Settings.FOV.OutlineTransparency
+        Settings.FOV.Circle.Thickness = value and 0 or 1
+    end,
+})
+Toggles.FOVFilled:OnChanged(function()
+    Settings.FOV.Filled = Toggles.FOVFilled.Value
+    Settings.FOV.Circle.Filled = Toggles.FOVFilled.Value
+    Settings.FOV.Circle.Color = Toggles.FOVFilled.Value
+            and Settings.FOV.FillColor
+        or Settings.FOV.OutlineColor
+    Settings.FOV.Circle.Transparency = Toggles.FOVFilled.Value
+            and Settings.FOV.FillTransparency
+        or Settings.FOV.OutlineTransparency
+    Settings.FOV.Circle.Thickness = Toggles.FOVFilled.Value and 0 or 1
+end)
+
+FOVGroup:AddLabel('Inline Color'):AddColorPicker('FOVFillColor', {
+    Default = Settings.FOV.FillColor,
+    Transparency = Settings.FOV.FillTransparency,
+    Callback = function(value)
+        Settings.FOV.FillColor = value
+        if Settings.FOV.Filled then
+            Settings.FOV.Circle.Color = value
+        end
+    end,
+})
+Options.FOVFillColor:OnChanged(function()
+    Settings.FOV.FillColor = Options.FOVFillColor.Value
+    if Settings.FOV.Filled then
+        Settings.FOV.Circle.Color = Options.FOVFillColor.Value
+    end
+end)
+
+FOVGroup:AddSlider('FOVFillTransparency', {
+    Text = 'Inline Transparency',
+    Default = Settings.FOV.FillTransparency,
+    Min = 0,
+    Max = 1,
+    Rounding = 2,
+    Callback = function(value)
+        Settings.FOV.FillTransparency = value
+        if Settings.FOV.Filled then
+            Settings.FOV.Circle.Transparency = value
+        end
+    end,
+})
+Options.FOVFillTransparency:OnChanged(function()
+    Settings.FOV.FillTransparency = Options.FOVFillTransparency.Value
+    if Settings.FOV.Filled then
+        Settings.FOV.Circle.Transparency = Options.FOVFillTransparency.Value
+    end
+end)
+
+FOVGroup:AddLabel('Outline Color'):AddColorPicker('FOVOutlineColor', {
+    Default = Settings.FOV.OutlineColor,
+    Transparency = Settings.FOV.OutlineTransparency,
+    Callback = function(value)
+        Settings.FOV.OutlineColor = value
+        Settings.FOV.OutlineCircle.Color = value
+        if not Settings.FOV.Filled then
+            Settings.FOV.Circle.Color = value
+        end
+    end,
+})
+Options.FOVOutlineColor:OnChanged(function()
+    Settings.FOV.OutlineColor = Options.FOVOutlineColor.Value
+    Settings.FOV.OutlineCircle.Color = Options.FOVOutlineColor.Value
+    if not Settings.FOV.Filled then
+        Settings.FOV.Circle.Color = Options.FOVOutlineColor.Value
+    end
+end)
+
+FOVGroup:AddSlider('FOVOutlineTransparency', {
+    Text = 'Outline Transparency',
+    Default = Settings.FOV.OutlineTransparency,
+    Min = 0,
+    Max = 1,
+    Rounding = 2,
+    Callback = function(value)
+        Settings.FOV.OutlineTransparency = value
+        Settings.FOV.OutlineCircle.Transparency = value
+        if not Settings.FOV.Filled then
+            Settings.FOV.Circle.Transparency = value
+        end
+    end,
+})
+Options.FOVOutlineTransparency:OnChanged(function()
+    Settings.FOV.OutlineTransparency = Options.FOVOutlineTransparency.Value
+    Settings.FOV.OutlineCircle.Transparency =
+        Options.FOVOutlineTransparency.Value
+    if not Settings.FOV.Filled then
+        Settings.FOV.Circle.Transparency = Options.FOVOutlineTransparency.Value
+    end
+end)
+
+FOVGroup:AddSlider('FOVRadius', {
+    Text = 'FOV Radius',
+    Default = Settings.FOV.Radius,
+    Min = 50,
+    Max = 1000,
+    Rounding = 0,
+    Callback = function(value)
+        Settings.FOV.Radius = value
+        Settings.FOV.Circle.Radius = value
+        Settings.FOV.OutlineCircle.Radius = value
+    end,
+})
+Options.FOVRadius:OnChanged(function()
+    Settings.FOV.Radius = Options.FOVRadius.Value
+    Settings.FOV.Circle.Radius = Options.FOVRadius.Value
+    Settings.FOV.OutlineCircle.Radius = Options.FOVRadius.Value
+end)
+
+-- Chams UI
+local ChamsGroup = Tabs.Visuals:AddLeftGroupbox('Chams')
+ChamsGroup:AddToggle('ChamsEnabled', {
+    Text = 'Enabled',
+    Default = Settings.Chams.Enabled,
+    Callback = function(value)
+        Settings.Chams.Enabled = value
+        if value then
+            State.ChamsUpdateConnection =
+                RunService.RenderStepped:Connect(updateChams)
+        else
+            if State.ChamsUpdateConnection then
+                State.ChamsUpdateConnection:Disconnect()
+                State.ChamsUpdateConnection = nil
+            end
+            for p in pairs(State.Highlights) do
+                removeHighlight(p)
             end
         end
-    })
-    ChamsGroup:AddColorPicker({
-        Name = "Fill Color",
-        Flag = "ChamsFillColor",
-        Color = self.Settings.Chams.Fill.Color,
-        Transparency = 0,
-        Callback = function(v)
-            self.Settings.Chams.Fill.Color = v
-            for _, h in pairs(self.State.Highlights) do h.FillColor = v end
-        end
-    })
-    ChamsGroup:AddColorPicker({
-        Name = "Outline Color",
-        Flag = "ChamsOutlineColor",
-        Color = self.Settings.Chams.Outline.Color,
-        Transparency = 0,
-        Callback = function(v)
-            self.Settings.Chams.Outline.Color = v
-            for _, h in pairs(self.State.Highlights) do h.OutlineColor = v end
-        end
-    })
-    ChamsGroup:AddSlider({
-        Name = "Fill Transparency",
-        Flag = "ChamsFillTransparency",
-        Value = self.Settings.Chams.Fill.Transparency,
-        Min = 0,
-        Max = 1,
-        Rounding = 1,
-        Callback = function(v)
-            self.Settings.Chams.Fill.Transparency = v
-            for _, h in pairs(self.State.Highlights) do h.FillTransparency = v end
-        end
-    })
-    ChamsGroup:AddSlider({
-        Name = "Outline Transparency",
-        Flag = "ChamsOutlineTransparency",
-        Value = self.Settings.Chams.Outline.Transparency,
-        Min = 0,
-        Max = 1,
-        Rounding = 1,
-        Callback = function(v)
-            self.Settings.Chams.Outline.Transparency = v
-            for _, h in pairs(self.State.Highlights) do h.OutlineTransparency = v end
-        end
-    })
+    end,
+})
+Toggles.ChamsEnabled:OnChanged(function()
+    Settings.Chams.Enabled = Toggles.ChamsEnabled.Value
+end)
 
-    -- Player UI
-    local PlayerGroup = Tabs.Player:CreateSection({Name = "Player"})
-    PlayerGroup:AddToggle({
-        Name = "Bunny Hop",
-        Flag = "BhopEnabled",
-        Value = self.Settings.Player.Bhop.Enabled,
-        Callback = function(s) self.Settings.Player.Bhop.Enabled = s end
-    })
-
-    -- Misc UI
-    local Optimizations = Tabs.Misc:CreateSection({Name = "Miscellaneous"})
-    Optimizations:AddToggle({
-        Name = "Toggle Textures",
-        Flag = "MiscTextures",
-        Value = self.Settings.Misc.Textures,
-        Callback = function(s)
-            self.Settings.Misc.Textures = s
-            if s then self.Misc:optimizeMap() else self.Misc:revertMap() end
+ChamsGroup:AddLabel('Fill Color'):AddColorPicker('ChamsFillColor', {
+    Default = Settings.Chams.Fill.Color,
+    Transparency = Settings.Chams.Fill.Transparency,
+    Callback = function(value)
+        Settings.Chams.Fill.Color = value
+        for _, h in pairs(State.Highlights) do
+            h.FillColor = value
         end
-    })
+    end,
+})
+Options.ChamsFillColor:OnChanged(function()
+    Settings.Chams.Fill.Color = Options.ChamsFillColor.Value
+    for _, h in pairs(State.Highlights) do
+        h.FillColor = Options.ChamsFillColor.Value
+    end
+end)
 
-    local Safety = Tabs.Misc:CreateSection({Name = "Safety", Side = "Right"})
-    Safety:AddToggle({
-        Name = "Rejoin on Votekick",
-        Flag = "VotekickRejoiner",
-        Value = self.Settings.Misc.VotekickRejoiner,
-        Callback = function(s)
-            self.Settings.Misc.VotekickRejoiner = s
-            if s then self.Misc:initializeVotekickRejoiner() end
+ChamsGroup:AddLabel('Outline Color'):AddColorPicker('ChamsOutlineColor', {
+    Default = Settings.Chams.Outline.Color,
+    Transparency = Settings.Chams.Outline.Transparency,
+    Callback = function(value)
+        Settings.Chams.Outline.Color = value
+        for _, h in pairs(State.Highlights) do
+            h.OutlineColor = value
         end
-    })
+    end,
+})
+Options.ChamsOutlineColor:OnChanged(function()
+    Settings.Chams.Outline.Color = Options.ChamsOutlineColor.Value
+    for _, h in pairs(State.Highlights) do
+        h.OutlineColor = Options.ChamsOutlineColor.Value
+    end
+end)
+
+ChamsGroup:AddSlider('ChamsFillTransparency', {
+    Text = 'Fill Transparency',
+    Default = Settings.Chams.Fill.Transparency,
+    Min = 0,
+    Max = 1,
+    Rounding = 1,
+    Callback = function(value)
+        Settings.Chams.Fill.Transparency = value
+        for _, h in pairs(State.Highlights) do
+            h.FillTransparency = value
+        end
+    end,
+})
+Options.ChamsFillTransparency:OnChanged(function()
+    Settings.Chams.Fill.Transparency = Options.ChamsFillTransparency.Value
+    for _, h in pairs(State.Highlights) do
+        h.FillTransparency = Options.ChamsFillTransparency.Value
+    end
+end)
+
+ChamsGroup:AddSlider('ChamsOutlineTransparency', {
+    Text = 'Outline Transparency',
+    Default = Settings.Chams.Outline.Transparency,
+    Min = 0,
+    Max = 1,
+    Rounding = 1,
+    Callback = function(value)
+        Settings.Chams.Outline.Transparency = value
+        for _, h in pairs(State.Highlights) do
+            h.OutlineTransparency = value
+        end
+    end,
+})
+Options.ChamsOutlineTransparency:OnChanged(function()
+    Settings.Chams.Outline.Transparency = Options.ChamsOutlineTransparency.Value
+    for _, h in pairs(State.Highlights) do
+        h.OutlineTransparency = Options.ChamsOutlineTransparency.Value
+    end
+end)
+
+-- Player UI
+local PlayerGroup = Tabs.Player:AddLeftGroupbox('Player')
+PlayerGroup:AddToggle('BhopEnabled', {
+    Text = 'Bunny Hop',
+    Default = Settings.Player.Bhop.Enabled,
+    Callback = function(value)
+        Settings.Player.Bhop.Enabled = value
+    end,
+})
+Toggles.BhopEnabled:OnChanged(function()
+    Settings.Player.Bhop.Enabled = Toggles.BhopEnabled.Value
+end)
+
+-- Misc UI
+local Optimizations = Tabs.Misc:AddLeftGroupbox('Miscellaneous')
+Optimizations:AddToggle('MiscTextures', {
+    Text = 'Toggle Textures',
+    Default = Settings.Misc.Textures,
+    Callback = function(value)
+        Settings.Misc.Textures = value
+        if value then
+            optimizeMap()
+        else
+            revertMap()
+        end
+    end,
+})
+Toggles.MiscTextures:OnChanged(function()
+    Settings.Misc.Textures = Toggles.MiscTextures.Value
+    if Toggles.MiscTextures.Value then
+        optimizeMap()
+    else
+        revertMap()
+    end
+end)
+
+local Safety = Tabs.Misc:AddRightGroupbox('Safety')
+Safety:AddToggle('VotekickRejoiner', {
+    Text = 'Rejoin on Votekick',
+    Default = Settings.Misc.VotekickRejoiner,
+    Callback = function(value)
+        Settings.Misc.VotekickRejoiner = value
+        if value then
+            initializeVotekickRejoiner()
+        end
+    end,
+})
+Toggles.VotekickRejoiner:OnChanged(function()
+    Settings.Misc.VotekickRejoiner = Toggles.VotekickRejoiner.Value
+    if Toggles.VotekickRejoiner.Value then
+        initializeVotekickRejoiner()
+    end
+end)
+
+-- Non-UI Setup
+Camera:GetPropertyChangedSignal('ViewportSize'):Connect(updateFOVCirclePosition)
+RunService.Heartbeat:Connect(updateFOVCirclePosition)
+
+local function handleBhop()
+    if Settings.Player.Bhop.Enabled then
+        local t = tick()
+        if (t - lastJumpTime) < jumpCooldown then
+            local hum = getCharacter():FindFirstChildOfClass('Humanoid')
+            if hum then
+                hum.Jump = true
+            end
+        end
+        lastJumpTime = t
+    end
+end
+
+UserInputService.InputBegan:Connect(function(i, gp)
+    if gp then
+        return
+    end
+    if i.KeyCode == Enum.KeyCode.Space then
+        handleBhop()
+    end
+end)
+
+-- UI Settings
+local MenuGroup = Tabs.UISettings:AddLeftGroupbox('Menu')
+MenuGroup:AddButton({
+    Text = 'Unload',
+    Func = function()
+        Library:Unload()
+    end,
+})
+MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', {
+    Default = 'RightShift',
+    NoUI = true,
+    Text = 'Menu keybind',
+})
+
+Library.ToggleKeybind = Options.MenuKeybind
 end
 
 function UI:Cleanup()
