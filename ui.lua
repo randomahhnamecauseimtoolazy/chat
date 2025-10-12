@@ -647,7 +647,7 @@ function UI:setupUI()
         Text = 'Menu keybind',
     })
 
-    self.Library.ToggleKeybind = self.Library.Options.MenuKeybind
+    self.Library.ToggleKeybind = self.Options.MenuKeybind
 
     -- Addons
     self.Library.SaveManager:SetLibrary(self.Library)
