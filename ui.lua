@@ -43,10 +43,6 @@ function UI:setupUI()
             self.Crosshair:toggleCrosshair(value)
         end,
     })
-    self.Library.Toggles.CrosshairEnabled:OnChanged(function()
-        self.Settings.Crosshair.Enabled = self.Library.Toggles.CrosshairEnabled.Value
-        self.Crosshair:toggleCrosshair(self.Library.Toggles.CrosshairEnabled.Value)
-    end)
 
     CrosshairGroup:AddDropdown('CrosshairStyle', {
         Text = 'Style',
@@ -56,9 +52,6 @@ function UI:setupUI()
             self.Settings.Crosshair.TStyle = value
         end,
     })
-    self.Library.Options.CrosshairStyle:OnChanged(function()
-        self.Settings.Crosshair.TStyle = self.Library.Options.CrosshairStyle.Value
-    end)
 
     CrosshairGroup:AddToggle('CrosshairDot', {
         Text = 'Center Dot',
@@ -67,9 +60,6 @@ function UI:setupUI()
             self.Settings.Crosshair.Dot = value
         end,
     })
-    self.Library.Toggles.CrosshairDot:OnChanged(function()
-        self.Settings.Crosshair.Dot = self.Library.Toggles.CrosshairDot.Value
-    end)
 
     CrosshairGroup:AddSlider('CrosshairSize', {
         Text = 'Size',
@@ -81,9 +71,6 @@ function UI:setupUI()
             self.Settings.Crosshair.Size = value
         end,
     })
-    self.Library.Options.CrosshairSize:OnChanged(function()
-        self.Settings.Crosshair.Size = self.Library.Options.CrosshairSize.Value
-    end)
 
     CrosshairGroup:AddSlider('CrosshairThickness', {
         Text = 'Thickness',
@@ -95,9 +82,6 @@ function UI:setupUI()
             self.Settings.Crosshair.Thickness = value
         end,
     })
-    self.Library.Options.CrosshairThickness:OnChanged(function()
-        self.Settings.Crosshair.Thickness = self.Library.Options.CrosshairThickness.Value
-    end)
 
     CrosshairGroup:AddSlider('CrosshairGap', {
         Text = 'Gap',
@@ -109,9 +93,6 @@ function UI:setupUI()
             self.Settings.Crosshair.Gap = value
         end,
     })
-    self.Library.Options.CrosshairGap:OnChanged(function()
-        self.Settings.Crosshair.Gap = self.Library.Options.CrosshairGap.Value
-    end)
 
     CrosshairGroup:AddLabel('Color'):AddColorPicker('CrosshairColor', {
         Default = self.Settings.Crosshair.Color,
@@ -120,9 +101,6 @@ function UI:setupUI()
             self.Settings.Crosshair.Color = value
         end,
     })
-    self.Library.Options.CrosshairColor:OnChanged(function()
-        self.Settings.Crosshair.Color = self.Library.Options.CrosshairColor.Value
-    end)
 
     CrosshairGroup:AddSlider('CrosshairTransparency', {
         Text = 'Transparency',
@@ -134,9 +112,6 @@ function UI:setupUI()
             self.Settings.Crosshair.Transparency = value
         end,
     })
-    self.Library.Options.CrosshairTransparency:OnChanged(function()
-        self.Settings.Crosshair.Transparency = self.Library.Options.CrosshairTransparency.Value
-    end)
 
     -- Aimbot UI
     if self.hasMouseMoveRel then
@@ -185,9 +160,6 @@ function UI:setupUI()
                 end
             end,
         })
-        self.Library.Toggles.AimbotEnabled:OnChanged(function()
-            self.Settings.Aimbot.Enabled = self.Library.Toggles.AimbotEnabled.Value
-        end)
 
         AimbotGroup:AddDropdown('AimbotHitPart', {
             Text = 'Hit Part',
@@ -197,9 +169,6 @@ function UI:setupUI()
                 self.Settings.Aimbot.HitPart = value
             end,
         })
-        self.Library.Options.AimbotHitPart:OnChanged(function()
-            self.Settings.Aimbot.HitPart = self.Library.Options.AimbotHitPart.Value
-        end)
 
         AimbotGroup:AddToggle('AimbotWallCheck', {
             Text = 'Wall Check',
@@ -208,9 +177,6 @@ function UI:setupUI()
                 self.Settings.Aimbot.WallCheck = value
             end,
         })
-        self.Library.Toggles.AimbotWallCheck:OnChanged(function()
-            self.Settings.Aimbot.WallCheck = self.Library.Toggles.AimbotWallCheck.Value
-        end)
 
         AimbotGroup:AddToggle('AimbotAutoTargetSwitch', {
             Text = 'Auto Target Switch',
@@ -219,9 +185,6 @@ function UI:setupUI()
                 self.Settings.Aimbot.AutoTargetSwitch = value
             end,
         })
-        self.Library.Toggles.AimbotAutoTargetSwitch:OnChanged(function()
-            self.Settings.Aimbot.AutoTargetSwitch = self.Library.Toggles.AimbotAutoTargetSwitch.Value
-        end)
 
         AimbotGroup:AddToggle('AimbotMaxDistanceEnabled', {
             Text = 'Use Max Distance',
@@ -230,9 +193,6 @@ function UI:setupUI()
                 self.Settings.Aimbot.MaxDistance.Enabled = value
             end,
         })
-        self.Library.Toggles.AimbotMaxDistanceEnabled:OnChanged(function()
-            self.Settings.Aimbot.MaxDistance.Enabled = self.Library.Toggles.AimbotMaxDistanceEnabled.Value
-        end)
 
         AimbotGroup:AddSlider('AimbotMaxDistance', {
             Text = 'Max Distance',
@@ -244,9 +204,6 @@ function UI:setupUI()
                 self.Settings.Aimbot.MaxDistance.Value = value
             end,
         })
-        self.Library.Options.AimbotMaxDistance:OnChanged(function()
-            self.Settings.Aimbot.MaxDistance.Value = self.Library.Options.AimbotMaxDistance.Value
-        end)
 
         AimbotGroup:AddSlider('AimbotEasingStrength', {
             Text = 'Strength',
@@ -259,10 +216,6 @@ function UI:setupUI()
                 self.Aimbot:updateSensitivity(value)
             end,
         })
-        self.Library.Options.AimbotEasingStrength:OnChanged(function()
-            self.Settings.Aimbot.Easing.Strength = self.Library.Options.AimbotEasingStrength.Value
-            self.Aimbot:updateSensitivity(self.Library.Options.AimbotEasingStrength.Value)
-        end)
     end
 
     -- ESP UI
@@ -299,9 +252,6 @@ function UI:setupUI()
             end
         end,
     })
-    self.Library.Toggles.ESPEnabled:OnChanged(function()
-        self.Settings.ESP.Enabled = self.Library.Toggles.ESPEnabled.Value
-    end)
 
     local function updateESPFeature(f, s)
         self.Settings.ESP.Features[f].Enabled = s
@@ -328,9 +278,6 @@ function UI:setupUI()
             updateESPFeature('Box', value)
         end,
     })
-    self.Library.Toggles.ESPBox:OnChanged(function()
-        updateESPFeature('Box', self.Library.Toggles.ESPBox.Value)
-    end)
 
     ESPGroup:AddToggle('ESPTracer', {
         Text = 'Tracer',
@@ -339,9 +286,6 @@ function UI:setupUI()
             updateESPFeature('Tracer', value)
         end,
     })
-    self.Library.Toggles.ESPTracer:OnChanged(function()
-        updateESPFeature('Tracer', self.Library.Toggles.ESPTracer.Value)
-    end)
 
     ESPGroup:AddToggle('ESPHeadDot', {
         Text = 'Head Dot',
@@ -350,9 +294,6 @@ function UI:setupUI()
             updateESPFeature('HeadDot', value)
         end,
     })
-    self.Library.Toggles.ESPHeadDot:OnChanged(function()
-        updateESPFeature('HeadDot', self.Library.Toggles.ESPHeadDot.Value)
-    end)
 
     ESPGroup:AddToggle('ESPDistance', {
         Text = 'Distance',
@@ -361,9 +302,6 @@ function UI:setupUI()
             updateESPFeature('DistanceText', value)
         end,
     })
-    self.Library.Toggles.ESPDistance:OnChanged(function()
-        updateESPFeature('DistanceText', self.Library.Toggles.ESPDistance.Value)
-    end)
 
     ESPGroup:AddToggle('ESPName', {
         Text = 'Name',
@@ -372,9 +310,6 @@ function UI:setupUI()
             updateESPFeature('Name', value)
         end,
     })
-    self.Library.Toggles.ESPName:OnChanged(function()
-        updateESPFeature('Name', self.Library.Toggles.ESPName.Value)
-    end)
 
     ESPGroup:AddToggle('ESPVisibilityCheck', {
         Text = 'Wall Check',
@@ -383,9 +318,6 @@ function UI:setupUI()
             self.Settings.ESP.VisibilityCheck = value
         end,
     })
-    self.Library.Toggles.ESPVisibilityCheck:OnChanged(function()
-        self.Settings.ESP.VisibilityCheck = self.Library.Toggles.ESPVisibilityCheck.Value
-    end)
 
     -- ESP Colors
     local ESPCustomization = Tabs.Visuals:AddRightGroupbox('ESP Colors')
@@ -412,9 +344,6 @@ function UI:setupUI()
             updateESPColor('Box', value)
         end,
     })
-    self.Library.Options.ESPBoxColor:OnChanged(function()
-        updateESPColor('Box', self.Library.Options.ESPBoxColor.Value)
-    end)
 
     ESPCustomization:AddLabel('Tracer Color'):AddColorPicker('ESPTracerColor', {
         Default = self.Settings.ESP.Features.Tracer.Color,
@@ -422,9 +351,6 @@ function UI:setupUI()
             updateESPColor('Tracer', value)
         end,
     })
-    self.Library.Options.ESPTracerColor:OnChanged(function()
-        updateESPColor('Tracer', self.Library.Options.ESPTracerColor.Value)
-    end)
 
     ESPCustomization:AddLabel('Distance Color'):AddColorPicker('ESPDistanceColor', {
         Default = self.Settings.ESP.Features.DistanceText.Color,
@@ -432,9 +358,6 @@ function UI:setupUI()
             updateESPColor('DistanceText', value)
         end,
     })
-    self.Library.Options.ESPDistanceColor:OnChanged(function()
-        updateESPColor('DistanceText', self.Library.Options.ESPDistanceColor.Value)
-    end)
 
     ESPCustomization:AddLabel('Head Dot Color'):AddColorPicker('ESPHeadDotColor', {
         Default = self.Settings.ESP.Features.HeadDot.Color,
@@ -442,9 +365,6 @@ function UI:setupUI()
             updateESPColor('HeadDot', value)
         end,
     })
-    self.Library.Options.ESPHeadDotColor:OnChanged(function()
-        updateESPColor('HeadDot', self.Library.Options.ESPHeadDotColor.Value)
-    end)
 
     ESPCustomization:AddLabel('Name Color'):AddColorPicker('ESPNameColor', {
         Default = self.Settings.ESP.Features.Name.Color,
@@ -452,9 +372,6 @@ function UI:setupUI()
             updateESPColor('Name', value)
         end,
     })
-    self.Library.Options.ESPNameColor:OnChanged(function()
-        updateESPColor('Name', self.Library.Options.ESPNameColor.Value)
-    end)
 
     -- Distance Settings
     local DistanceCustomization = Tabs.Visuals:AddRightGroupbox('Distance Settings')
@@ -466,10 +383,6 @@ function UI:setupUI()
             if self.Settings.ESP.Enabled then self.ESP:updatePlayerCache() end
         end,
     })
-    self.Library.Toggles.ESPMaxDistanceEnabled:OnChanged(function()
-        self.Settings.ESP.MaxDistance.Enabled = self.Library.Toggles.ESPMaxDistanceEnabled.Value
-        if self.Settings.ESP.Enabled then self.ESP:updatePlayerCache() end
-    end)
 
     DistanceCustomization:AddSlider('ESPMaxDistance', {
         Text = 'Max Distance',
@@ -482,10 +395,6 @@ function UI:setupUI()
             if self.Settings.ESP.Enabled then self.ESP:updatePlayerCache() end
         end,
     })
-    self.Library.Options.ESPMaxDistance:OnChanged(function()
-        self.Settings.ESP.MaxDistance.Value = self.Library.Options.ESPMaxDistance.Value
-        if self.Settings.ESP.Enabled then self.ESP:updatePlayerCache() end
-    end)
 
     -- FOV UI
     local FOVGroup = Tabs.Main:AddRightGroupbox('FOV')
@@ -498,11 +407,6 @@ function UI:setupUI()
             self.Settings.FOV.OutlineCircle.Visible = value
         end,
     })
-    self.Library.Toggles.FOVEnabled:OnChanged(function()
-        self.Settings.FOV.Enabled = self.Library.Toggles.FOVEnabled.Value
-        self.Settings.FOV.Circle.Visible = self.Library.Toggles.FOVEnabled.Value
-        self.Settings.FOV.OutlineCircle.Visible = self.Library.Toggles.FOVEnabled.Value
-    end)
 
     FOVGroup:AddToggle('FOVFollowGun', {
         Text = 'Follow Gun',
@@ -511,9 +415,6 @@ function UI:setupUI()
             self.Settings.FOV.FollowGun = value
         end,
     })
-    self.Library.Toggles.FOVFollowGun:OnChanged(function()
-        self.Settings.FOV.FollowGun = self.Library.Toggles.FOVFollowGun.Value
-    end)
 
     FOVGroup:AddToggle('FOVFilled', {
         Text = 'Fill FOV Circle',
@@ -526,13 +427,6 @@ function UI:setupUI()
             self.Settings.FOV.Circle.Thickness = value and 0 or 1
         end,
     })
-    self.Library.Toggles.FOVFilled:OnChanged(function()
-        self.Settings.FOV.Filled = self.Library.Toggles.FOVFilled.Value
-        self.Settings.FOV.Circle.Filled = self.Library.Toggles.FOVFilled.Value
-        self.Settings.FOV.Circle.Color = self.Library.Toggles.FOVFilled.Value and self.Settings.FOV.FillColor or self.Settings.FOV.OutlineColor
-        self.Settings.FOV.Circle.Transparency = self.Library.Toggles.FOVFilled.Value and self.Settings.FOV.FillTransparency or self.Settings.FOV.OutlineTransparency
-        self.Settings.FOV.Circle.Thickness = self.Library.Toggles.FOVFilled.Value and 0 or 1
-    end)
 
     FOVGroup:AddLabel('Inline Color'):AddColorPicker('FOVFillColor', {
         Default = self.Settings.FOV.FillColor,
@@ -544,12 +438,6 @@ function UI:setupUI()
             end
         end,
     })
-    self.Library.Options.FOVFillColor:OnChanged(function()
-        self.Settings.FOV.FillColor = self.Library.Options.FOVFillColor.Value
-        if self.Settings.FOV.Filled then
-            self.Settings.FOV.Circle.Color = self.Library.Options.FOVFillColor.Value
-        end
-    end)
 
     FOVGroup:AddSlider('FOVFillTransparency', {
         Text = 'Inline Transparency',
@@ -564,12 +452,6 @@ function UI:setupUI()
             end
         end,
     })
-    self.Library.Options.FOVFillTransparency:OnChanged(function()
-        self.Settings.FOV.FillTransparency = self.Library.Options.FOVFillTransparency.Value
-        if self.Settings.FOV.Filled then
-            self.Settings.FOV.Circle.Transparency = self.Library.Options.FOVFillTransparency.Value
-        end
-    end)
 
     FOVGroup:AddLabel('Outline Color'):AddColorPicker('FOVOutlineColor', {
         Default = self.Settings.FOV.OutlineColor,
@@ -582,13 +464,6 @@ function UI:setupUI()
             end
         end,
     })
-    self.Library.Options.FOVOutlineColor:OnChanged(function()
-        self.Settings.FOV.OutlineColor = self.Library.Options.FOVOutlineColor.Value
-        self.Settings.FOV.OutlineCircle.Color = self.Library.Options.FOVOutlineColor.Value
-        if not self.Settings.FOV.Filled then
-            self.Settings.FOV.Circle.Color = self.Library.Options.FOVOutlineColor.Value
-        end
-    end)
 
     FOVGroup:AddSlider('FOVOutlineTransparency', {
         Text = 'Outline Transparency',
@@ -604,13 +479,6 @@ function UI:setupUI()
             end
         end,
     })
-    self.Library.Options.FOVOutlineTransparency:OnChanged(function()
-        self.Settings.FOV.OutlineTransparency = self.Library.Options.FOVOutlineTransparency.Value
-        self.Settings.FOV.OutlineCircle.Transparency = self.Library.Options.FOVOutlineTransparency.Value
-        if not self.Settings.FOV.Filled then
-            self.Settings.FOV.Circle.Transparency = self.Library.Options.FOVOutlineTransparency.Value
-        end
-    end)
 
     FOVGroup:AddSlider('FOVRadius', {
         Text = 'FOV Radius',
@@ -624,11 +492,6 @@ function UI:setupUI()
             self.Settings.FOV.OutlineCircle.Radius = value
         end,
     })
-    self.Library.Options.FOVRadius:OnChanged(function()
-        self.Settings.FOV.Radius = self.Library.Options.FOVRadius.Value
-        self.Settings.FOV.Circle.Radius = self.Library.Options.FOVRadius.Value
-        self.Settings.FOV.OutlineCircle.Radius = self.Library.Options.FOVRadius.Value
-    end)
 
     -- Chams UI
     local ChamsGroup = Tabs.Visuals:AddLeftGroupbox('Chams')
@@ -650,9 +513,6 @@ function UI:setupUI()
             end
         end,
     })
-    self.Library.Toggles.ChamsEnabled:OnChanged(function()
-        self.Settings.Chams.Enabled = self.Library.Toggles.ChamsEnabled.Value
-    end)
 
     ChamsGroup:AddLabel('Fill Color'):AddColorPicker('ChamsFillColor', {
         Default = self.Settings.Chams.Fill.Color,
@@ -664,12 +524,6 @@ function UI:setupUI()
             end
         end,
     })
-    self.Library.Options.ChamsFillColor:OnChanged(function()
-        self.Settings.Chams.Fill.Color = self.Library.Options.ChamsFillColor.Value
-        for _, h in pairs(self.State.Highlights) do
-            h.FillColor = self.Library.Options.ChamsFillColor.Value
-        end
-    end)
 
     ChamsGroup:AddLabel('Outline Color'):AddColorPicker('ChamsOutlineColor', {
         Default = self.Settings.Chams.Outline.Color,
@@ -681,12 +535,6 @@ function UI:setupUI()
             end
         end,
     })
-    self.Library.Options.ChamsOutlineColor:OnChanged(function()
-        self.Settings.Chams.Outline.Color = self.Library.Options.ChamsOutlineColor.Value
-        for _, h in pairs(self.State.Highlights) do
-            h.OutlineColor = self.Library.Options.ChamsOutlineColor.Value
-        end
-    end)
 
     ChamsGroup:AddSlider('ChamsFillTransparency', {
         Text = 'Fill Transparency',
@@ -701,12 +549,6 @@ function UI:setupUI()
             end
         end,
     })
-    self.Library.Options.ChamsFillTransparency:OnChanged(function()
-        self.Settings.Chams.Fill.Transparency = self.Library.Options.ChamsFillTransparency.Value
-        for _, h in pairs(self.State.Highlights) do
-            h.FillTransparency = self.Library.Options.ChamsFillTransparency.Value
-        end
-    end)
 
     ChamsGroup:AddSlider('ChamsOutlineTransparency', {
         Text = 'Outline Transparency',
@@ -721,12 +563,6 @@ function UI:setupUI()
             end
         end,
     })
-    self.Library.Options.ChamsOutlineTransparency:OnChanged(function()
-        self.Settings.Chams.Outline.Transparency = self.Library.Options.ChamsOutlineTransparency.Value
-        for _, h in pairs(self.State.Highlights) do
-            h.OutlineTransparency = self.Library.Options.ChamsOutlineTransparency.Value
-        end
-    end)
 
     -- Player UI
     local PlayerGroup = Tabs.Player:AddLeftGroupbox('Player')
@@ -737,9 +573,6 @@ function UI:setupUI()
             self.Settings.Player.Bhop.Enabled = value
         end,
     })
-    self.Library.Toggles.BhopEnabled:OnChanged(function()
-        self.Settings.Player.Bhop.Enabled = self.Library.Toggles.BhopEnabled.Value
-    end)
 
     -- Misc UI
     local Optimizations = Tabs.Misc:AddLeftGroupbox('Miscellaneous')
@@ -755,14 +588,6 @@ function UI:setupUI()
             end
         end,
     })
-    self.Library.Toggles.MiscTextures:OnChanged(function()
-        self.Settings.Misc.Textures = self.Library.Toggles.MiscTextures.Value
-        if self.Library.Toggles.MiscTextures.Value then
-            self.Misc:optimizeMap()
-        else
-            self.Misc:revertMap()
-        end
-    end)
 
     local Safety = Tabs.Misc:AddRightGroupbox('Safety')
     Safety:AddToggle('VotekickRejoiner', {
@@ -775,12 +600,6 @@ function UI:setupUI()
             end
         end,
     })
-    self.Library.Toggles.VotekickRejoiner:OnChanged(function()
-        self.Settings.Misc.VotekickRejoiner = self.Library.Toggles.VotekickRejoiner.Value
-        if self.Library.Toggles.VotekickRejoiner.Value then
-            self.Misc:initializeVotekickRejoiner()
-        end
-    end)
 
     -- Non-UI Setup
     game:GetService("Workspace").Camera:GetPropertyChangedSignal('ViewportSize'):Connect(function()
