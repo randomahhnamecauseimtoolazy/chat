@@ -1,9 +1,10 @@
 local UI = {}
 
-function UI:Init(Settings, State, Library, hasMouseMoveRel, Aimbot, ESP, FOV, Chams, Crosshair, PlayerMod, Misc, Utilities)
+function UI:Init(Settings, State, Library, SaveManager, hasMouseMoveRel, Aimbot, ESP, FOV, Chams, Crosshair, PlayerMod, Misc, Utilities)
     self.Settings = Settings
     self.State = State
     self.Library = Library
+    self.SaveManager = SaveManager
     self.hasMouseMoveRel = hasMouseMoveRel
     self.Aimbot = Aimbot
     self.ESP = ESP
@@ -650,12 +651,12 @@ function UI:setupUI()
     self.Library.ToggleKeybind = menuKeyPicker
 
     -- Addons
-    self.Library.SaveManager:SetLibrary(self.Library)
-    self.Library.SaveManager:IgnoreThemeSettings()
-    self.Library.SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
-    self.Library.SaveManager:SetFolder('kaotiksoftworks/PhantomForces/Nullwave')
-    self.Library.SaveManager:BuildConfigSection(Tabs.UISettings)
-    self.Library.SaveManager:LoadAutoloadConfig()
+    self.SaveManager:SetLibrary(self.Library)
+    self.SaveManager:IgnoreThemeSettings()
+    self.SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
+    self.SaveManager:SetFolder('kaotiksoftworks/PhantomForces/Nullwave')
+    self.SaveManager:BuildConfigSection(Tabs.UISettings)
+    self.SaveManager:LoadAutoloadConfig()
 end
 
 function UI:Cleanup()
