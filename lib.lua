@@ -3023,13 +3023,14 @@ do
     })
 
     local WatermarkOuter = Library:Create('Frame', {
-        BorderColor3 = Color3.new(0, 0, 0),
-        Position = UDim2.new(0, 100, 0, -25),
-        Size = UDim2.new(0, 213, 0, 20),
-        ZIndex = 200,
-        Visible = false,
-        Parent = ScreenGui,
-    })
+    AnchorPoint = Vector2.new(1, 1),
+    BorderColor3 = Color3.new(0, 0, 0),
+    Position = UDim2.new(1, -1, 1, -1),
+    Size = UDim2.new(0, 213, 0, 20),
+    ZIndex = 200,
+    Visible = false,
+    Parent = ScreenGui,
+})
 
     local WatermarkInner = Library:Create('Frame', {
         BackgroundColor3 = Library.MainColor,
