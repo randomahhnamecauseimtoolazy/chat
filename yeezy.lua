@@ -3378,44 +3378,16 @@ function Library:CreateWindow(...)
         BorderColor3 = 'AccentColor',
     })
 
+
     local WindowImage = Library:Create('ImageLabel', {
         Position = UDim2.new(0, 7, 0, 0),
         Size = UDim2.new(0, 200, 0, 25), -- Adjust size as needed
         BackgroundTransparency = 1,
+        Image = Config.Image or 'rbxassetid://124142247223281', -- Set your image ID here
         ScaleType = Enum.ScaleType.Fit,
         ZIndex = 1,
         Parent = Inner,
     })
-
-     function Window:SetWindowImageSimple(base64String)
-        if not base64String or type(base6464String) ~= 'string' then
-            return false
-        end
-
-        -- Remove data URL prefix if present
-        local cleanBase64 = base64String:gsub("data:image/[^;]+;base64,", "")
-        
-        -- For Roblox, we might need to use a different approach
-        -- This method creates a temporary Decal and uses its texture
-        local decal = Instance.new("Decal")
-        decal.Name = "TempWindowTitle"
-        
-        local success = pcall(function()
-            decal.Texture = "data:image/png;base64," .. cleanBase64
-        end)
-        
-        if success then
-            WindowImage.Image = decal.Texture
-            decal:Destroy()
-            return true
-        else
-            warn("Failed to set image from base64")
-            decal:Destroy()
-            return false
-        end
-    end
-
-
 
     local MainSectionOuter = Library:Create('Frame', {
         BackgroundColor3 = Library.BackgroundColor,
