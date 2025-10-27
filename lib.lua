@@ -134,17 +134,44 @@ function Library:AttemptSave()
 end
 
 function Library:Create(Class, Properties)
-    local _Instance = Class
+    local success, _Instance = pcall(function()
+        local instance
+        if type(Class) == 'string' then
+            instance = Instance.new(Class)
+        else
+            instance = Class
+        end
 
-    if type(Class) == 'string' then
-        _Instance = Instance.new(Class)
+        for Property, Value in next, Properties do
+            pcall(function()
+                instance[Property] = Value
+            end)
+        end
+
+        return instance
+    end)
+
+    if success and _Instance then
+        return _Instance
+    else
+        -- Fallback: create in a safe context
+        return task.spawn(function()
+            local instance
+            if type(Class) == 'string' then
+                instance = Instance.new(Class)
+            else
+                instance = Class
+            end
+
+            for Property, Value in next, Properties do
+                pcall(function()
+                    instance[Property] = Value
+                end)
+            end
+
+            return instance
+        end)
     end
-
-    for Property, Value in next, Properties do
-        _Instance[Property] = Value
-    end
-
-    return _Instance
 end
 
 function Library:ApplyTextStroke(Inst)
