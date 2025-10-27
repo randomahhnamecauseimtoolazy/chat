@@ -3387,38 +3387,30 @@ function Library:CreateWindow(...)
         Parent = Inner,
     })
 
-     function Window:SetWindowImage(base64String)
-        if not base64String or type(base64String) ~= 'string' then
+     function Window:SetWindowImageSimple(base64String)
+        if not base64String or type(base6464String) ~= 'string' then
             return false
         end
 
         -- Remove data URL prefix if present
         local cleanBase64 = base64String:gsub("data:image/[^;]+;base64,", "")
         
-        -- Decode the base64 string
-        local success, decoded = pcall(function()
-            return crypt.base64.decode(cleanBase64)
+        -- For Roblox, we might need to use a different approach
+        -- This method creates a temporary Decal and uses its texture
+        local decal = Instance.new("Decal")
+        decal.Name = "TempWindowTitle"
+        
+        local success = pcall(function()
+            decal.Texture = "data:image/png;base64," .. cleanBase64
         end)
         
-        if success and decoded then
-            -- Create a temporary Texture object
-            local texture = Instance.new("Texture")
-            texture.Name = "WindowTitleTexture"
-            
-            -- Load the decoded data into the texture
-            local loadSuccess = pcall(function()
-                texture:SetBinaryData(decoded, "image/png") -- Adjust MIME type if needed
-            end)
-            
-            if loadSuccess then
-                WindowImage.Image = "rbxasset://" .. texture.Name
-                return true
-            else
-                warn("Failed to load decoded image data")
-                return false
-            end
+        if success then
+            WindowImage.Image = decal.Texture
+            decal:Destroy()
+            return true
         else
-            warn("Failed to decode base64 image:", decoded)
+            warn("Failed to set image from base64")
+            decal:Destroy()
             return false
         end
     end
