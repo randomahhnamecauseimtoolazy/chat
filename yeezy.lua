@@ -3050,14 +3050,14 @@ do
     })
 
     local WatermarkOuter = Library:Create('Frame', {
-    AnchorPoint = Vector2.new(1, 1),
-    BorderColor3 = Color3.new(0, 0, 0),
-    Position = UDim2.new(1, -1, 1, -1),
-    Size = UDim2.new(0, 213, 0, 20),
-    ZIndex = 200,
-    Visible = false,
-    Parent = ScreenGui,
-})
+        AnchorPoint = Vector2.new(1, 1),
+        BorderColor3 = Color3.new(0, 0, 0),
+        Position = UDim2.new(1, -1, 1, -1),
+        Size = UDim2.new(0, 213, 0, 20),
+        ZIndex = 200,
+        Visible = false,
+        Parent = ScreenGui,
+    })
 
     local WatermarkInner = Library:Create('Frame', {
         BackgroundColor3 = Library.MainColor,
@@ -3378,13 +3378,12 @@ function Library:CreateWindow(...)
         BorderColor3 = 'AccentColor',
     })
 
-
     local WindowImage = Library:Create('ImageLabel', {
         Position = UDim2.new(0, 7, 0, 0),
-        Size = UDim2.new(0, 200, 0, 25), -- Adjust size as needed
+        Size = UDim2.new(0, 100, 0, 25), -- Adjust size as needed
         BackgroundTransparency = 1,
-        Image = Config.Image or 'rbxassetid://124142247223281', -- Set your image ID here
-        ScaleType = Enum.ScaleType.Fit,
+        Image = Config.Image or 'rbxassetid://110333627180057', -- Set your image ID here
+        ScaleType = Enum.ScaleType.Stretch,
         ZIndex = 1,
         Parent = Inner,
     })
@@ -3445,7 +3444,6 @@ function Library:CreateWindow(...)
         BackgroundColor3 = 'MainColor',
         BorderColor3 = 'OutlineColor',
     })
-
 
     function Window:AddTab(Name)
         local Tab = {
